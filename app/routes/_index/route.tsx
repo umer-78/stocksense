@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 
-import { login } from "../../shopify.server";
+import { hasShopifyCredentials } from "../../lib/env";
 
 import styles from "./styles.module.css";
 
@@ -13,19 +13,34 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     throw redirect(`/app?${url.searchParams.toString()}`);
   }
 
-  return { showForm: Boolean(login) };
+  // Guard BEFORE importing ../../shopify.server: shopifyApp() throws at module
+  // load when SHOPIFY_APP_URL is missing.
+  if (!hasShopifyCredentials()) {
+    return { showForm: false, missingCredentials: true };
+  }
+  const { login } = await import("../../shopify.server");
+
+  return { showForm: Boolean(login), missingCredentials: false };
 };
 
 export default function App() {
-  const { showForm } = useLoaderData<typeof loader>();
+  const { showForm, missingCredentials } = useLoaderData<typeof loader>();
 
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>A short heading about [your app]</h1>
+        <h1 className={styles.heading}>StockSense — inventory forecasting for Shopify</h1>
         <p className={styles.text}>
-          A tagline about [your app] that describes your value proposition.
+          Sales velocity, days-to-stockout and reorder suggestions for every
+          variant, with plain-English explanations behind every number.
         </p>
+        {missingCredentials && (
+          <p className={styles.text}>
+            Shopify credentials are not configured. Set SHOPIFY_API_KEY,
+            SHOPIFY_API_SECRET, SHOPIFY_APP_URL and SCOPES in your .env file
+            (see .env.example), then restart the dev server.
+          </p>
+        )}
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
             <label className={styles.label}>
@@ -40,16 +55,17 @@ export default function App() {
         )}
         <ul className={styles.list}>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Explainable forecasts</strong>. Every recommendation comes
+            with the numbers behind it: velocity, lead-time demand, safety
+            stock and target coverage.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Urgency dashboard</strong>. Variants sorted by stockout
+            risk, with filters for location, status and search.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Purchase order builder</strong>. Turn suggestions into a
+            CSV purchase order in one click.
           </li>
         </ul>
       </div>

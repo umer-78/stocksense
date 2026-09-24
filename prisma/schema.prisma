@@ -32,3 +32,33 @@ model Session {
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
+
+/// Per-shop forecasting preferences (defaults used by the dashboard and detail pages).
+model ShopSettings {
+  shop            String   @id
+  defaultLeadTime Int      @default(14)
+  safetyStockPct  Float    @default(0.2)
+  targetDays      Int      @default(30)
+  lookbackDays    Int      @default(60)
+  locationId      String?
+  updatedAt       DateTime @updatedAt
+}
+
+/// Best-effort Stocky CSV imports (variants / PO history). `data` holds the parsed rows as JSON.
+model StockyImport {
+  id        Int      @id @default(autoincrement())
+  shop      String
+  fileName  String
+  rowCount  Int
+  data      String
+  createdAt DateTime @default(now())
+}
+
+/// Log of GDPR compliance webhooks received (customers/data_request, customers/redact, shop/redact).
+model PrivacyEvent {
+  id        Int      @id @default(autoincrement())
+  shop      String
+  topic     String
+  payload   String
+  createdAt DateTime @default(now())
+}
