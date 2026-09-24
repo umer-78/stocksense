@@ -27,6 +27,11 @@ interface ImportLoaderData {
   blocked?: boolean;
 }
 
+/** Max accepted upload size (raw rows JSON payload) — guards against OOM. */
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024; // 5 MB
+/** Max accepted number of parsed rows. */
+const MAX_IMPORT_ROWS = 50_000;
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const auth = await authenticateAdmin(request);
   if (auth.missingCredentials || !auth.billing) {
@@ -34,7 +39,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
   try {
     const billingCheck = await auth.billing.check({ plans: [...PAID_PLAN_NAMES] });
-    const plan = planFromSubscription(billingCheck.appSubscriptions[0]?.name);
+    const plan = planFromSubscription(billingCheck.appSubscriptions[0]?.name, billingCheck.appSubscriptions[0]?.status);
     if (!canUseFeature(plan, "stockyImport")) {
       return json<ImportLoaderData>({ missingCredentials: false, blocked: true });
     }
@@ -57,10 +62,30 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const fileName = String(form.get("fileName") ?? "stocky-export.csv");
   const rawRows = String(form.get("rows") ?? "[]");
 
+  // Server-side guard: reject oversized payloads before parsing so a huge
+  // upload cannot OOM the server.
+  if (Buffer.byteLength(rawRows, "utf8") > MAX_IMPORT_BYTES) {
+    return json(
+      {
+        error:
+          "The import is larger than 5 MB. Split the export into smaller files and try again.",
+      },
+      { status: 413 },
+    );
+  }
+
   try {
     const rows = JSON.parse(rawRows) as unknown[];
     if (!Array.isArray(rows)) {
       return json({ error: "Invalid rows payload" }, { status: 400 });
+    }
+    if (rows.length > MAX_IMPORT_ROWS) {
+      return json(
+        {
+          error: `The import has ${rows.length.toLocaleString()} rows, which exceeds the 50,000 row limit. Split the export into smaller files and try again.`,
+        },
+        { status: 413 },
+      );
     }
     await db.stockyImport.create({
       data: {
@@ -108,6 +133,12 @@ export default function ImportStocky() {
     setParseError(null);
     setParseResult(null);
     if (!file) {
+      return;
+    }
+    if (file.size > MAX_IMPORT_BYTES) {
+      setParseError(
+        "The file is larger than 5 MB. Split the export into smaller files and try again.",
+      );
       return;
     }
     setFileName(file.name);

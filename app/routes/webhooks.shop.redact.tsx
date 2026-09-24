@@ -7,8 +7,9 @@ import db from "../db.server";
  * GDPR compliance webhook: shop/redact.
  *
  * Shopify asks the app to delete all data for the shop. StockSense deletes the
- * shop's settings, Stocky imports and privacy-event log, then acknowledges
- * with 200.
+ * shop's settings, Stocky imports, privacy-event log and auth sessions (which
+ * hold PII such as the shop owner's email and access tokens), then
+ * acknowledges with 200.
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { payload, shop, topic, missingCredentials } = await authenticateWebhook(request);
@@ -30,6 +31,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   await db.$transaction([
     db.shopSettings.deleteMany({ where: { shop } }),
     db.stockyImport.deleteMany({ where: { shop } }),
+    db.privacyEvent.deleteMany({ where: { shop } }),
+    db.session.deleteMany({ where: { shop } }),
   ]);
 
   return json({});

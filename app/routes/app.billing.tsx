@@ -35,7 +35,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const check = await auth.billing.check({ plans: [...PAID_PLAN_NAMES] });
     return json<BillingLoaderData>({
       missingCredentials: false,
-      plan: planFromSubscription(check.appSubscriptions[0]?.name),
+      plan: planFromSubscription(check.appSubscriptions[0]?.name, check.appSubscriptions[0]?.status),
       subscriptions: check.appSubscriptions.map((s) => ({ id: s.id, name: s.name, status: s.status })),
     });
   } catch (error) {

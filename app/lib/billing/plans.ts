@@ -58,12 +58,24 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
 export const PAID_PLAN_NAMES = ["Growth", "Pro"] as const;
 
 /**
- * Map an active subscription name to a plan. Anything unrecognized (or no
- * subscription at all) resolves to the Free plan.
+ * Map a subscription to a plan.
+ *
+ * Only an ACTIVE subscription grants paid features. A subscription whose
+ * status is anything else (CANCELLED, EXPIRED, DECLINED, FROZEN, PENDING)
+ * maps to the Free plan. During a 14-day trial Shopify reports the
+ * subscription as ACTIVE, so trial users keep paid features.
+ *
+ * `status` defaults to "ACTIVE" so callers that only have the subscription
+ * name keep working; the billing API always returns a status, and every
+ * call site in this app passes it through.
  */
 export function planFromSubscription(
   subscriptionName: string | null | undefined,
+  status: string | null | undefined = "ACTIVE",
 ): PlanId {
+  if (status !== "ACTIVE") {
+    return "free";
+  }
   if (subscriptionName === "Growth") {
     return "growth";
   }

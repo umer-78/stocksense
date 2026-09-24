@@ -52,7 +52,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   try {
     const billingCheck = await auth.billing.check({ plans: [...PAID_PLAN_NAMES] });
-    const plan = planFromSubscription(billingCheck.appSubscriptions[0]?.name);
+    const plan = planFromSubscription(billingCheck.appSubscriptions[0]?.name, billingCheck.appSubscriptions[0]?.status);
 
     if (!canUseFeature(plan, "poBuilder")) {
       return json<PoLoaderData>({ missingCredentials: false, blocked: true, plan, rows: [] });

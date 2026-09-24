@@ -57,7 +57,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   try {
     const billingCheck = await auth.billing.check({ plans: [...PAID_PLAN_NAMES] });
-    const plan = planFromSubscription(billingCheck.appSubscriptions[0]?.name);
+    const plan = planFromSubscription(billingCheck.appSubscriptions[0]?.name, billingCheck.appSubscriptions[0]?.status);
     const settings = await getShopSettings(auth.session.shop);
 
     const cacheKey = `snapshot:${auth.session.shop}:${settings.lookbackDays}:${settings.locationId ?? "all"}`;

@@ -17,6 +17,29 @@ describe("planFromSubscription", () => {
     expect(planFromSubscription(undefined)).toBe("free");
     expect(planFromSubscription("Enterprise")).toBe("free");
   });
+
+  it("keeps paid plans during an active subscription (incl. 14-day trial)", () => {
+    // Shopify reports a subscription in its trial period as ACTIVE, so trial
+    // users must keep paid features.
+    expect(planFromSubscription("Growth", "ACTIVE")).toBe("growth");
+    expect(planFromSubscription("Pro", "ACTIVE")).toBe("pro");
+  });
+
+  it("maps non-active subscriptions to free", () => {
+    expect(planFromSubscription("Growth", "CANCELLED")).toBe("free");
+    expect(planFromSubscription("Pro", "CANCELLED")).toBe("free");
+    expect(planFromSubscription("Growth", "EXPIRED")).toBe("free");
+    expect(planFromSubscription("Pro", "EXPIRED")).toBe("free");
+    expect(planFromSubscription("Growth", "DECLINED")).toBe("free");
+    expect(planFromSubscription("Pro", "DECLINED")).toBe("free");
+    expect(planFromSubscription("Growth", "FROZEN")).toBe("free");
+    expect(planFromSubscription("Pro", "PENDING")).toBe("free");
+  });
+
+  it("maps a cancelled subscription with no name to free", () => {
+    expect(planFromSubscription(null, "CANCELLED")).toBe("free");
+    expect(planFromSubscription(undefined, "EXPIRED")).toBe("free");
+  });
 });
 
 describe("enforcePlanLimit", () => {
