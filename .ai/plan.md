@@ -1,4 +1,36 @@
-# StockSense — Step 4: Deployment readiness (hosting config, env audit, runbook)
+# StockSense — Step 5: Live deployment (Render)
+
+## Goal
+Deploy stocksense to Render free tier and verify /healthz live.
+
+## Checklist (Step 5)
+- [x] GitHub repo pushed (umer-78/stocksense, main @ 8704962)
+- [x] Render account created (GitHub OAuth, My Workspace)
+- [x] Render GitHub App installed on umer-78/stocksense (sudo-mode email verify passed)
+- [x] Web Service form configured: name=stocksense, branch=main, region=Oregon,
+      compute=$0 Free (NOT $7), Docker ./Dockerfile, Health Check=/healthz, Auto-Deploy on
+- [x] Env vars set: SHOPIFY_API_KEY/SHOPIFY_API_SECRET=placeholders, SCOPES=DEPLOY.md line 77 value
+- [x] User added card in Stripe modal ($1 temp auth hold only, no charge — cost ≤ $1 satisfied)
+- [x] Service created; first Docker build deploy succeeded (dep-dar7ql0u01pc738hkrhg, 3m45s)
+- [x] **SHOPIFY_APP_URL corrected** to real URL https://stocksense-igb7.onrender.com
+      (Render added random suffix; old value https://stocksense.onrender.com was wrong)
+- [x] Save, rebuild, and deploy → second deploy succeeded (dep-dar820jncjis73cg6feg, 1m29s, "Deploy succeeded | Live")
+- [x] Verified externally via curl: /healthz → 200 {"ok":true,"service":"stocksense"}; / → 200
+      (Render logs show repeated GET /healthz 200 + "Your service is live 🎉")
+- [x] Step 5 deployment milestone complete
+
+## Where to continue
+Deployment DONE. Live at https://stocksense-igb7.onrender.com (healthy, auto-deploy on main).
+Next work, in order:
+1. **Shopify Partner account** (user identity/email) → create app → get real
+   SHOPIFY_API_KEY / SHOPIFY_API_SECRET → paste into Render Environment (srv-dar7qkgu01pc738hkqb0/env)
+   → Save, rebuild, and deploy. Partner Dashboard app URLs: App URL https://stocksense-igb7.onrender.com,
+   redirect /auth/callback, privacy /privacy-policy.html, terms /terms.html (DEPLOY.md step 5).
+2. Install app on Shopify dev store → smoke test install flow.
+3. Optional cleanup: investigate old GitHub Actions CI failures on umer-78/stocksense.
+4. Before real merchants: flip isTest:false (billing), Fly.io for persistent SQLite.
+
+# (archived) Step 4: Deployment readiness (hosting config, env audit, runbook)
 
 ## Goal
 Make the project 100% deploy-ready at $0 and write a copy-paste runbook (DEPLOY.md). Nothing is deployed now (no credentials exist).
