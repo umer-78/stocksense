@@ -9,13 +9,16 @@ node_modules
 /app/public/build
 /prisma/dev.sqlite
 /prisma/dev.sqlite-journal
+/prisma/data/
 database.sqlite
 
 .env
 .env.*
 !.env.example
 
-package-lock.json
+# package-lock.json IS committed (needed for `npm ci` on Render/Fly/Docker).
+# Remove the ignore rule below if you switch to a different lockfile.
+# package-lock.json
 yarn.lock
 pnpm-lock.yaml
 

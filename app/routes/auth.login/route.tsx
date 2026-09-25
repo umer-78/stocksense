@@ -13,19 +13,21 @@ import {
 import polarisTranslations from "@shopify/polaris/locales/en.json";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 
-import { login } from "../../shopify.server";
-
 import { loginErrorMessage } from "./error.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  // Lazy import: shopifyApp() throws at module load when SHOPIFY_APP_URL is
+  // missing, and the server bundle executes every route module at boot.
+  const { login } = await import("../../shopify.server");
   const errors = loginErrorMessage(await login(request));
 
   return { errors, polarisTranslations };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  const { login } = await import("../../shopify.server");
   const errors = loginErrorMessage(await login(request));
 
   return {

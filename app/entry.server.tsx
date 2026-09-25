@@ -6,7 +6,7 @@ import {
   type EntryContext,
 } from "@remix-run/node";
 import { isbot } from "isbot";
-import { addDocumentResponseHeaders } from "./shopify.server";
+import { hasShopifyCredentials } from "./lib/env";
 
 export const streamTimeout = 5000;
 
@@ -16,7 +16,14 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext
 ) {
-  addDocumentResponseHeaders(request, responseHeaders);
+  // Lazy + guarded: shopifyApp() throws at module load when SHOPIFY_APP_URL is
+  // missing, and entry.server is loaded at boot — before any route guard can
+  // run. Without credentials we skip Shopify's security headers so the server
+  // can still boot and show the "credentials missing" landing page.
+  if (hasShopifyCredentials()) {
+    const { addDocumentResponseHeaders } = await import("./shopify.server");
+    addDocumentResponseHeaders(request, responseHeaders);
+  }
   const userAgent = request.headers.get("user-agent");
   const callbackName = isbot(userAgent ?? '')
     ? "onAllReady"

@@ -1,19 +1,25 @@
 # This file stores configurations for your Shopify app.
 
+# Populated by `shopify app config link` (Partner Dashboard → Apps → your app).
 client_id = ""
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+# Must match SCOPES in your host's env vars (see .env.example).
 scopes = "read_inventory,read_products,read_orders,read_locations,write_inventory,read_purchase_orders"
 
-# PLACEHOLDER URLs — replaced in Step 4 (deployment + App Store listing) with
-# the real hosted pages. The same values live in app/lib/config.ts.
-[app_preferences]
-privacy_policy_url = "https://example.com/privacy-policy"
-terms_of_service_url = "https://example.com/terms"
+# Privacy policy / terms of service URLs are NOT configurable in this file —
+# Shopify's app config schema has no such fields. They are set in the Partner
+# Dashboard: App setup → App details → "Privacy policy URL" and
+# "Terms of service URL". After deploying, enter:
+#   https://<SHOPIFY_APP_URL>/privacy-policy.html
+#   https://<SHOPIFY_APP_URL>/terms.html
+# where <SHOPIFY_APP_URL> is the single base URL env var (see DEPLOY.md step 2).
+# The app itself derives the same URLs in app/lib/config.ts.
 
 [webhooks]
-api_version = "2024-10"
+# Keep this in sync with ApiVersion in app/shopify.server.ts.
+api_version = "2026-07"
 
   # Handled by: /app/routes/webhooks.app.uninstalled.tsx
   [[webhooks.subscriptions]]

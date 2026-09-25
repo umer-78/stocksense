@@ -1,8 +1,10 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
 import db from "../db.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  // Lazy import: shopifyApp() throws at module load when SHOPIFY_APP_URL is
+  // missing, and the server bundle executes every route module at boot.
+  const { authenticate } = await import("../shopify.server");
   const { shop, session, topic } = await authenticate.webhook(request);
 
   console.log(`Received ${topic} webhook for ${shop}`);

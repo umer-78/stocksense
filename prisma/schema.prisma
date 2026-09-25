@@ -10,7 +10,11 @@ generator client {
 // See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
 datasource db {
   provider = "sqlite"
-  url      = "file:dev.sqlite"
+  // Relative to this file's directory (prisma/), so the database lives at
+  // prisma/data/dev.sqlite. Kept out of prisma/migrations so a hosting volume
+  // can be mounted at prisma/data without shadowing the migration files
+  // (see fly.toml). Local dev: `shopify app dev` creates prisma/data/dev.sqlite.
+  url      = "file:data/dev.sqlite"
 }
 
 model Session {
