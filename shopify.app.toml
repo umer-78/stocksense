@@ -1,7 +1,13 @@
 # This file stores configurations for your Shopify app.
 
 # Populated by `shopify app config link` (Partner Dashboard → Apps → your app).
-client_id = ""
+client_id = "9ff1c68995a15044cadb977894bad3a1"
+name = "stocksense"
+application_url = "https://stocksense-igb7.onrender.com"
+embedded = true
+
+[auth]
+redirect_urls = [ "https://stocksense-igb7.onrender.com/auth/callback" ]
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
