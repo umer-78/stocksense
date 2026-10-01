@@ -27,3 +27,8 @@ pnpm-lock.yaml
 # Ignore shopify files created during app dev
 .shopify/*
 .shopify.lock
+
+# AI tool artifacts
+.ai/
+AGENTS.md
+CLAUDE.md
