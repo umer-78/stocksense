@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy — StockSense</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #202223;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 32px 20px;
+      }
+      h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.15rem; margin-top: 2rem; }
+      p, li { font-size: 0.95rem; }
+      .muted { color: #6d7175; font-size: 0.85rem; }
+    </style>
+  </head>
+  <body>
+    <h1>StockSense Privacy Policy</h1>
+    <p class="muted">Last updated: September 2026</p>
+
+    <p>
+      StockSense is an inventory forecasting app for Shopify merchants. This
+      policy explains what data the app accesses, how it is used, and your
+      rights. This is a placeholder policy for development; it will be replaced
+      with the final version before the app is published.
+    </p>
+
+    <h2>Data we access</h2>
+    <p>When you install StockSense on your Shopify store, the app accesses:</p>
+    <ul>
+      <li><strong>Products and variants</strong> — SKUs, titles, prices, and unit costs, used to build the inventory dashboard.</li>
+      <li><strong>Inventory levels</strong> — on-hand, available, committed, and incoming quantities per location, used to compute stockout dates and reorder suggestions.</li>
+      <li><strong>Orders</strong> — line items and order dates, used only to compute sales velocity. We do not read customer names, emails, addresses, or payment information.</li>
+      <li><strong>Locations</strong> — names and IDs, used to filter forecasts by location.</li>
+    </ul>
+
+    <h2>How we use the data</h2>
+    <p>
+      The data above is used solely to provide forecasting features: sales
+      velocity, days-to-stockout, reorder points, suggested order quantities,
+      and purchase-order summaries. We do not sell, rent, or share your data
+      with third parties for marketing purposes.
+    </p>
+
+    <h2>Data storage</h2>
+    <p>
+      We store only the minimum needed to run the app: your store's forecasting
+      settings (lead time, safety stock, target coverage, lookback window,
+      selected location) and any CSV files you import. Shopify order and
+      product data is fetched from the Shopify Admin API on demand and is not
+      copied into our database.
+    </p>
+
+    <h2>Data retention and deletion</h2>
+    <p>
+      When you uninstall StockSense, or when Shopify sends a
+      <em>shop/redact</em> request, we delete the store's settings and imported
+      files. You can request a copy of your data at any time using the contact
+      details below.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      For privacy questions or data requests, contact us at
+      <a href="mailto:support@stocksense.example.com">support@stocksense.example.com</a>.
+    </p>
+  </body>
+</html>
