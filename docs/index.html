@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en" data-site="stocksense">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StockSense — reorder before you run out</title>
+<meta name="description" content="Inventory forecasting for Shopify. Sales velocity, days-to-stockout and reorder quantities for every variant, with the arithmetic shown behind every number. A Stocky replacement.">
+<meta name="theme-color" content="#0f5c43">
+<meta property="og:type" content="website">
+<meta property="og:title" content="StockSense — reorder before you run out">
+<meta property="og:description" content="Inventory forecasting for Shopify, with the math shown behind every reorder number.">
+<meta property="og:url" content="https://umer-78.github.io/stocksense/">
+<meta property="og:image" content="https://umer-78.github.io/stocksense/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f5c43'/%3E%3Cpath d='M9 20h3v-6H9zM14.5 20h3V9h-3zM20 20h3v-9h-3z' fill='%23f3efe4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Newsreader:ital@0;1&display=swap">
+<style>
+  /* StockSense marketing site. Deliberately not the generic template look:
+     a warm paper palette (no pure white, no purple/black, no neon), a serif
+     display face (not Inter/Geist/Grotesk), flat fills (no gradients, no glass),
+     and no decorative orbs, dot grids, sparkles or fake testimonials. */
+  :root {
+    --paper: #f5f1e8;
+    --paper-2: #efe9db;
+    --card: #fbf9f3;
+    --ink: #1d2a21;
+    --ink-soft: #3f4a40;
+    --muted: #6d6f63;
+    --line: #d9d2c0;
+    --line-strong: #c3bba5;
+    --accent: #0f5c43;
+    --accent-ink: #f3efe4;
+    --amber: #a2521a;
+    --crit: #9a2b25;
+    --ok: #3f6b2f;
+    --maxw: 1080px;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --read: "Newsreader", Georgia, serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14160f;
+      --paper-2: #191b12;
+      --card: #1e2017;
+      --ink: #eae6d6;
+      --ink-soft: #c3c1b1;
+      --muted: #938f7e;
+      --line: #2f3225;
+      --line-strong: #3d402f;
+      --accent: #5bbd92;
+      --accent-ink: #0c130d;
+      --amber: #d78a4a;
+      --crit: #e0756b;
+      --ok: #8fc06a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 17px/1.65 var(--sans); -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.08; letter-spacing: -0.01em; }
+  h2 { font-size: clamp(27px, 3.6vw, 38px); margin: 0 0 14px; }
+  p { margin: 0 0 16px; }
+  .lead { color: var(--ink-soft); }
+
+  /* top bar */
+  header.top { border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--paper) 88%, transparent); position: sticky; top: 0; z-index: 20; backdrop-filter: blur(6px); }
+  .bar { display: flex; align-items: center; gap: 22px; height: 64px; }
+  .brand { font-family: var(--serif); font-weight: 700; font-size: 20px; letter-spacing: -0.02em; display: inline-flex; align-items: center; gap: 9px; text-decoration: none; }
+  .brand .mark { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: inline-grid; place-items: center; }
+  .brand .mark svg { width: 15px; height: 15px; }
+  .nav { margin-left: auto; display: flex; gap: 22px; align-items: center; }
+  .nav a { color: var(--ink-soft); text-decoration: none; font-size: 15px; }
+  .nav a:hover { color: var(--ink); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; font: 600 15px/1 var(--sans); text-decoration: none; padding: 11px 17px; border-radius: 7px; border: 1px solid var(--accent); cursor: pointer; }
+  .btn.solid { background: var(--accent); color: var(--accent-ink); }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn.solid:hover { background: color-mix(in srgb, var(--accent) 86%, #000); }
+  .nav .btn { padding: 9px 14px; }
+  @media (max-width: 760px) { .nav a:not(.btn) { display: none; } }
+
+  /* hero */
+  .hero { padding: clamp(46px, 7vw, 86px) 0 40px; border-bottom: 1px solid var(--line); }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; }
+  @media (max-width: 880px) { .hero-grid { grid-template-columns: 1fr; gap: 34px; } }
+  .eyebrow { font: 600 13px/1 var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 18px; }
+  .hero h1 { font-size: clamp(38px, 6vw, 60px); font-weight: 600; margin: 0 0 20px; }
+  .hero h1 em { font-style: italic; font-family: var(--read); font-weight: 400; }
+  .hero .lead { font-size: 19px; max-width: 34ch; }
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
+  .note { font-size: 14px; color: var(--muted); margin-top: 14px; }
+
+  /* the worked-example card: this is the real forecast breakdown the app shows */
+  .ex { background: var(--card); border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 0 var(--line); }
+  .ex-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+  .ex-head b { font-family: var(--serif); font-size: 17px; }
+  .ex-head .sku { font: 500 12px/1 var(--mono); color: var(--muted); }
+  .pill { font: 600 11px/1 var(--sans); letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; }
+  .pill.crit { color: var(--crit); background: color-mix(in srgb, var(--crit) 14%, transparent); }
+  .ex-body { padding: 6px 18px 12px; }
+  .row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+  .row:last-child { border-bottom: 0; }
+  .row .k { color: var(--ink-soft); }
+  .row .v { font: 600 14.5px/1.3 var(--mono); text-align: right; }
+  .row .why { color: var(--muted); font-size: 12.5px; display: block; margin-top: 2px; }
+  .row.key .v { color: var(--accent); font-size: 16px; }
+  .ex-foot { padding: 12px 18px; background: var(--paper-2); border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-soft); }
+
+  section { padding: clamp(50px, 7vw, 82px) 0; border-bottom: 1px solid var(--line); }
+  .kicker { font: 600 13px/1 var(--sans); letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin: 0 0 12px; }
+  .section-lead { max-width: 60ch; color: var(--ink-soft); font-size: 18px; }
+
+  /* how it works: a numbered vertical ledger, not three cards in a row */
+  .steps { margin-top: 36px; display: grid; gap: 2px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .step { display: grid; grid-template-columns: 54px 1fr; gap: 20px; padding: 22px 24px; background: var(--card); }
+  .step + .step { border-top: 1px solid var(--line); }
+  .step .n { font-family: var(--serif); font-size: 30px; color: var(--accent); font-weight: 600; }
+  .step h3 { font-size: 20px; margin: 2px 0 6px; }
+  .step p { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
+
+  /* honesty columns */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 30px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+  .cols .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+  .cols h3 { font-size: 19px; margin: 0 0 14px; }
+  .list { margin: 0; padding: 0; list-style: none; }
+  .list li { padding: 8px 0 8px 26px; position: relative; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 15px; }
+  .list li:first-child { border-top: 0; }
+  .list li::before { content: ""; position: absolute; left: 2px; top: 15px; width: 10px; height: 2px; background: var(--accent); }
+  .list.no li::before { background: var(--muted); width: 10px; }
+
+  /* pricing: an honest comparison table, not three glassy cards */
+  table.price { width: 100%; border-collapse: collapse; margin-top: 30px; background: var(--card); border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; }
+  table.price th, table.price td { text-align: left; padding: 15px 18px; border-bottom: 1px solid var(--line); font-size: 15px; }
+  table.price thead th { font-family: var(--serif); font-size: 18px; font-weight: 600; background: var(--paper-2); }
+  table.price thead th .amt { display: block; font-family: var(--sans); font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+  table.price tbody th { color: var(--ink-soft); font-weight: 500; }
+  table.price td { font-variant-numeric: tabular-nums; color: var(--ink); }
+  table.price tr:last-child td, table.price tr:last-child th { border-bottom: 0; }
+  .price-note { color: var(--muted); font-size: 13.5px; margin-top: 12px; }
+  .price-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  @media (max-width: 620px) {
+    .price-scroll table.price { min-width: 540px; }
+    table.price th, table.price td { padding: 12px 13px; }
+    .ex-head, .row { flex-wrap: wrap; }
+  }
+
+  .faq { margin-top: 24px; }
+  details { border-top: 1px solid var(--line); padding: 16px 0; }
+  details summary { font-family: var(--serif); font-size: 18px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: "+"; color: var(--accent); font-family: var(--sans); }
+  details[open] summary::after { content: "–"; }
+  details p { margin: 12px 0 0; color: var(--ink-soft); font-size: 15.5px; }
+
+  footer { padding: 40px 0 56px; }
+  .foot { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: center; }
+  .foot a { color: var(--ink-soft); text-decoration: none; font-size: 14.5px; }
+  .foot a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  .foot .sp { margin-left: auto; color: var(--muted); font-size: 13.5px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="#top">
+      <span class="mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 21h3v-7H9zM14.5 21h3V8h-3zM20 21h3v-10h-3z" fill="#f3efe4"/></svg></span>
+      StockSense
+    </a>
+    <nav class="nav">
+      <a href="#how">How it works</a>
+      <a href="#honesty">What it does</a>
+      <a href="#pricing">Pricing</a>
+      <a class="btn solid" href="https://github.com/umer-78/stocksense">Get it on GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+<div class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Inventory forecasting for Shopify</p>
+      <h1>Reorder before you run out, with the <em>math shown</em> for every number.</h1>
+      <p class="lead">Stocky shut down in August 2026. StockSense reads your real sales history, projects when each variant runs out, and tells you how much to reorder, explaining every figure in a sentence.</p>
+      <div class="cta-row">
+        <a class="btn solid" href="https://github.com/umer-78/stocksense">Get it on GitHub</a>
+        <a class="btn ghost" href="#how">See how the math works</a>
+      </div>
+      <p class="note">Reads your inventory, never writes to it. Stores no customer data.</p>
+    </div>
+    <div class="ex" role="figure" aria-label="A worked forecast for one variant, as the app shows it">
+      <div class="ex-head">
+        <div><b>Trail Runner, UK 9</b><br><span class="sku">SKU TR-UK9-BLK</span></div>
+        <span class="pill crit">Reorder now</span>
+      </div>
+      <div class="ex-body">
+        <div class="row"><span class="k">Average daily sales<span class="why">42 units over the last 60 days, weighted to recent weeks</span></span><span class="v">0.70 / day</span></div>
+        <div class="row"><span class="k">On hand today<span class="why">current inventory at this location</span></span><span class="v">6</span></div>
+        <div class="row"><span class="k">Days to stockout<span class="why">6 on hand divided by 0.70 per day</span></span><span class="v">8.6 days</span></div>
+        <div class="row"><span class="k">Lead-time demand<span class="why">0.70 / day over a 14-day supplier lead time</span></span><span class="v">9.8</span></div>
+        <div class="row"><span class="k">Safety stock<span class="why">20% buffer on lead-time demand</span></span><span class="v">2</span></div>
+        <div class="row key"><span class="k">Suggested order<span class="why">reorder point reached, bring cover back to 30 days</span></span><span class="v">24 units</span></div>
+      </div>
+      <div class="ex-foot">Every value on this card is derived from your data. Nothing is a black box, and thin-data forecasts are flagged honestly.</div>
+    </div>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <p class="kicker">How it works</p>
+    <h2>From sales history to a purchase order</h2>
+    <p class="section-lead">Three reads of the Shopify Admin API, no writes, one location at a time.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div><h3>It reads your real sales</h3><p>StockSense pulls each variant's recent order history from Shopify and computes a sales velocity in units per day, weighted toward recent weeks so a slow month does not hide a fast one.</p></div></div>
+      <div class="step"><div class="n">2</div><div><h3>It projects the stockout and the reorder</h3><p>From on-hand inventory it works out days-to-stockout, then the reorder point and order quantity from your supplier lead time, safety-stock buffer and target cover. Each figure is shown with the arithmetic behind it.</p></div></div>
+      <div class="step"><div class="n">3</div><div><h3>You adjust and export a purchase order</h3><p>Change the lead time, safety stock or target days and every recommendation recomputes at once. The purchase-order builder lists what needs reordering and exports a CSV for your supplier. It never emails or places an order for you.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="honesty">
+  <div class="wrap">
+    <p class="kicker">Straight about scope</p>
+    <h2>What it does, and what it does not</h2>
+    <p class="section-lead">An inventory tool is only useful if you can trust where its numbers stop. Here is the honest edge.</p>
+    <div class="cols">
+      <div class="panel">
+        <h3>What StockSense does</h3>
+        <ul class="list">
+          <li>Sales velocity and days-to-stockout for every variant</li>
+          <li>Reorder point and suggested order quantity, each explained</li>
+          <li>An urgency dashboard ranked critical, low, or healthy</li>
+          <li>Live recompute when you change lead time or safety stock</li>
+          <li>A purchase-order builder with CSV export</li>
+          <li>Import of Stocky's variant and purchase-order CSV exports</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>What it does not do</h3>
+        <ul class="list no">
+          <li>Place or email orders. CSV export only.</li>
+          <li>Manage suppliers or receiving</li>
+          <li>Forecast more than one location at a time</li>
+          <li>Write to your inventory. It reads only.</li>
+          <li>Store any customer data. Shopify's GDPR webhooks are implemented.</li>
+          <li>Promise a forecast on thin data. It flags low confidence instead.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <p class="kicker">Pricing</p>
+    <h2>Priced by how many variants you track</h2>
+    <p class="section-lead">Billed through Shopify, cancel from your admin at any time. Paid plans include a 14-day trial.</p>
+    <div class="price-scroll">
+    <table class="price">
+      <thead>
+        <tr>
+          <th>What you get</th>
+          <th>Free<span class="amt">no charge</span></th>
+          <th>Growth<span class="amt">$19 / month</span></th>
+          <th>Pro<span class="amt">$49 / month</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th>Variants tracked</th><td>up to 100</td><td>up to 2,000</td><td>unlimited</td></tr>
+        <tr><th>Velocity and days-to-stockout</th><td>yes</td><td>yes</td><td>yes</td></tr>
+        <tr><th>Day-of-week seasonality</th><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><th>Purchase-order builder and CSV</th><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><th>Stocky CSV import</th><td>yes</td><td>yes</td><td>yes</td></tr>
+        <tr><th>Free trial</th><td>&mdash;</td><td>14 days</td><td>14 days</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="price-note">Limits are enforced on the server, so the number you pay for is the number you get. Prices are set in the app's billing configuration.</p>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <p class="kicker">Questions</p>
+    <h2>Before you install</h2>
+    <div class="faq">
+      <details><summary>Is this a drop-in Stocky replacement?</summary><p>It covers the part most stores relied on: knowing what to reorder and when. You can import Stocky's variant and purchase-order CSV exports as reference history. It does not carry over suppliers, and it does not place orders, so it is a focused replacement rather than a full match.</p></details>
+      <details><summary>Will it change my inventory or place orders?</summary><p>No. StockSense only reads your inventory and order history. The purchase-order builder exports a CSV for you to send to your supplier. Nothing is written back to Shopify and nothing is ordered automatically.</p></details>
+      <details><summary>How does it handle a product with very little sales history?</summary><p>It still shows a figure, but marks the forecast as low confidence rather than presenting a thin-data guess as if it were certain. The math on the card shows exactly what the estimate is based on.</p></details>
+      <details><summary>What about customer data and GDPR?</summary><p>The app stores no customer data. It implements Shopify's three mandated privacy webhooks for data requests, customer redaction and shop redaction.</p></details>
+      <details><summary>Can I self-host it?</summary><p>Yes. StockSense is open source. The repository includes a Dockerfile and deploy configuration for common hosts, and a deploy guide. See the GitHub link below.</p></details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <a href="https://github.com/umer-78/stocksense">Source on GitHub</a>
+    <a href="terms.html">Terms of Service</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
+    <a href="https://umer-78.github.io/">More projects</a>
+    <span class="sp">Built by Umer Hashmi</span>
+  </div>
+</footer>
+</body>
+</html>
