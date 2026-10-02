@@ -17,7 +17,7 @@ import { TitleBar } from "@shopify/app-bridge-react";
 
 import { MissingCredentials } from "../components/MissingCredentials";
 import { authenticateAdmin } from "../lib/auth";
-import { PAID_PLAN_NAMES, PLANS, planFromSubscription, type PlanId } from "../lib/billing/plans";
+import { PAID_PLAN_NAMES, PLANS, isTestBilling, planFromSubscription, type PlanId } from "../lib/billing/plans";
 
 interface BillingLoaderData {
   missingCredentials: boolean;
@@ -62,11 +62,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   // billing.request throws a redirect to Shopify's confirmation page; the
-  // merchant returns to /app/billing after approving. isTest: true prevents
-  // real charges (required for test shops). Flip to false for production.
+  // merchant returns to /app/billing after approving. isTest is env-driven:
+  // test charges on dev/test shops, real charges in production (see
+  // isTestBilling / SHOPIFY_BILLING_TEST).
   await auth.billing.request({
     plan,
-    isTest: true,
+    isTest: isTestBilling(),
     returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing`,
   });
   return json({});

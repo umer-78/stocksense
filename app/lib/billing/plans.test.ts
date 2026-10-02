@@ -3,6 +3,7 @@ import {
   PLANS,
   canUseFeature,
   enforcePlanLimit,
+  isTestBilling,
   planFromSubscription,
 } from "./plans";
 
@@ -93,6 +94,24 @@ describe("canUseFeature", () => {
   it("keeps Stocky import available on all plans", () => {
     expect(canUseFeature("free", "stockyImport")).toBe(true);
     expect(canUseFeature("pro", "stockyImport")).toBe(true);
+  });
+});
+
+describe("isTestBilling", () => {
+  it("uses real charges in production by default", () => {
+    expect(isTestBilling({ NODE_ENV: "production" })).toBe(false);
+  });
+
+  it("uses test charges outside production by default", () => {
+    expect(isTestBilling({ NODE_ENV: "development" })).toBe(true);
+    expect(isTestBilling({})).toBe(true);
+  });
+
+  it("honours the explicit SHOPIFY_BILLING_TEST override either way", () => {
+    // force test even in production
+    expect(isTestBilling({ NODE_ENV: "production", SHOPIFY_BILLING_TEST: "true" })).toBe(true);
+    // force live even in development
+    expect(isTestBilling({ NODE_ENV: "development", SHOPIFY_BILLING_TEST: "false" })).toBe(false);
   });
 });
 

@@ -114,3 +114,22 @@ export function enforcePlanLimit(plan: PlanId, skuCount: number): PlanLimitResul
 export function canUseFeature(plan: PlanId, feature: PlanFeature): boolean {
   return PLANS[plan].features[feature];
 }
+
+/**
+ * Whether billing requests should be Shopify *test* charges (no real money).
+ *
+ * Test charges are required on development/test shops and must be OFF for real
+ * merchants, or they are never charged. Rule:
+ *   - SHOPIFY_BILLING_TEST="true"  -> test   (explicit override)
+ *   - SHOPIFY_BILLING_TEST="false" -> live   (explicit override)
+ *   - otherwise                    -> test unless NODE_ENV === "production"
+ *
+ * Pure (takes the env map) so it is unit-testable.
+ */
+export function isTestBilling(
+  env: { SHOPIFY_BILLING_TEST?: string; NODE_ENV?: string } = process.env,
+): boolean {
+  if (env.SHOPIFY_BILLING_TEST === "true") return true;
+  if (env.SHOPIFY_BILLING_TEST === "false") return false;
+  return env.NODE_ENV !== "production";
+}
