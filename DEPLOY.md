@@ -117,27 +117,26 @@ second `APP_BASE_URL` — one var, no drift.
    `https://<SHOPIFY_APP_URL>/auth?shop=<dev-store>.myshopify.com`.
 3. Walk through: OAuth login → dashboard loads → import a Stocky CSV →
    variant detail → purchase order builder → settings.
-4. Test billing in test mode (charges are simulated, `isTest: true` is still
-   set — see step 6): **Settings → Billing** in the app, subscribe to Growth
-   or Pro, confirm the simulated charge, verify the plan badge updates.
+4. Test billing in test mode (on a dev store charges are always simulated —
+   see step 6): **Settings → Billing** in the app, subscribe to Growth or Pro,
+   confirm the simulated charge, verify the plan badge updates.
 5. Test the legal pages: `/privacy-policy` and `/terms` redirect to
    `/privacy-policy.html` / `/terms.html`.
 
-## Step 6 — Flip billing out of test mode ⚠️ (your account, code change)
+## Step 6 — Flip billing out of test mode ⚠️ (your account, env var — no code change)
 
-`app/routes/app.billing.tsx` line 69 still has `isTest: true` (simulated
-charges — required for dev stores). Before real merchants can be charged:
+Billing test mode is now env-driven (`isTestBilling()` in
+`app/lib/billing/plans.ts`), so **no code edit is needed**:
 
-```diff
-  await auth.billing.request({
-    plan,
--   isTest: true,
-+   isTest: false,
-    returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing`,
-  });
-```
+- On dev stores / local: test charges are used automatically (simulated, no money).
+- In production: when `NODE_ENV=production` (Render and Fly set this), real
+  charges are used automatically.
+- To force it either way, set `SHOPIFY_BILLING_TEST=true` (test) or
+  `SHOPIFY_BILLING_TEST=false` (real) in the host's env vars.
 
-Then commit, push, and redeploy (Render auto-deploys from the branch).
+So for real merchants you don't change code — just deploy to a host where
+`NODE_ENV=production` (the default on Render/Fly), or set
+`SHOPIFY_BILLING_TEST=false`. Nothing is charged on dev stores regardless.
 
 ## Step 7 — Launch UNLISTED first ⚠️ (your account)
 
@@ -179,7 +178,7 @@ The Dockerfile is shared with Render, so the same image works on both.
 ## Verification checklist (run before each deploy)
 
 ```bash
-npm test          # 90 tests pass
+npm test          # 93 tests pass
 npm run typecheck # clean
 npm run lint      # clean
 npm run build     # succeeds
