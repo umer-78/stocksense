@@ -116,7 +116,6 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 | `read_orders` | Read order line items to compute sales velocity (the forecast's core input) |
 | `read_locations` | List locations so merchants can pick which one to forecast against |
 | `write_inventory` | Requested but currently unused — the app only reads inventory today; reserved for future features |
-| `read_purchase_orders` | Read purchase-order data (used with Stocky PO imports) |
 
 **Honesty notes for reviewers.**
 - The app does not write inventory, does not place orders, and does not email suppliers. PO output is CSV export only.
