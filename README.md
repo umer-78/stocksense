@@ -43,7 +43,7 @@ English.
 - **Shopify App Remix** (`@shopify/shopify-app-remix`) — OAuth, Admin API
   GraphQL, billing, webhooks; API version `2026-07`
 - **Polaris** (`@shopify/polaris` v12) — UI components
-- **Prisma + SQLite** — sessions, per-shop settings, Stocky imports, privacy
+- **Prisma + Postgres** (Supabase free tier) — sessions, per-shop settings, Stocky imports, privacy
   event log (`prisma/schema.prisma`)
 - **Forecast engine** (`app/lib/forecast/`) — pure TypeScript, no framework
   dependencies: velocity, stockout, reorder, seasonality, and the
@@ -62,7 +62,7 @@ account, a development store, and the Shopify CLI.
 
 ```shell
 npm install
-npm run setup        # prisma generate && prisma migrate deploy (creates prisma/data/dev.sqlite)
+npm run setup        # prisma generate && prisma migrate deploy (needs DATABASE_URL in .env)
 npm run dev          # shopify app dev — tunnel + local dev server
 ```
 

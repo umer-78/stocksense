@@ -1,18 +1,15 @@
-# Fly.io config for StockSense — the PERSISTENT upgrade path.
+# Fly.io config for StockSense — optional alternative host.
 #
 # Honest cost (2026): Fly.io removed its free tier for new customers (Oct 2024)
 # and requires a credit card. A minimal app like this bills ~$2-3/mo
-# (smallest shared-cpu machine + 1 GB volume); invoices under $5 are waived.
+# (smallest shared-cpu machine); invoices under $5 are waived.
 #
-# The SQLite database lives on a persistent volume mounted at /app/prisma/data,
-# so sessions/settings/imports survive restarts and redeploys. This is the
-# target to move to BEFORE onboarding real merchants (Render free tier cannot
-# persist SQLite — see render.yaml).
+# Optional: the app keeps all state in Postgres (DATABASE_URL), so no volume
+# is needed. Render free + Supabase free is the default $0 setup.
 #
 # Setup (from DEPLOY.md):
 #   fly launch --no-deploy
-#   fly volumes create data --size 1 --region iad
-#   fly secrets set SHOPIFY_API_KEY=... SHOPIFY_API_SECRET=... SCOPES=... SHOPIFY_APP_URL=...
+#   fly secrets set SHOPIFY_API_KEY=... SHOPIFY_API_SECRET=... SCOPES=... SHOPIFY_APP_URL=... DATABASE_URL=...
 #   fly deploy
 app = "stocksense"
 primary_region = "iad"
@@ -31,9 +28,3 @@ primary_region = "iad"
   auto_start_machines = true
   min_machines_running = 1
   processes = ["app"]
-
-# Persistent volume for the SQLite database (prisma/data/dev.sqlite).
-# Create it once with: fly volumes create data --size 1 --region iad
-[[mounts]]
-  source = "data"
-  destination = "/app/prisma/data"

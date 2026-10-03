@@ -1,22 +1,19 @@
 # StockSense — Deployment Runbook
 
 Copy-paste steps to take StockSense from this repo to a live app on the Shopify
-App Store. **Nothing in this repo is deployed yet** — every step below is
-manual and needs your accounts.
+App Store. Steps marked ⚠️ need your accounts.
 
-Cost summary (honest, verified 2026):
+Cost: **$0.** Render free web service + Supabase free Postgres. No card needed.
 
-| Path | Cost | Persistence |
+| Piece | Cost | Notes |
 | --- | --- | --- |
-| **Render free tier** (this runbook, steps 1–8) | $0, no credit card | ❌ SQLite wiped on spin-down/restart/redeploy — fine for dev-store testing, NOT for real merchants |
-| **Fly.io** (step 9, upgrade) | ~$2–3/mo, card required | ✅ persistent volume for SQLite |
+| Render free web service | $0 | Ephemeral disk — that's why state lives in Postgres |
+| Supabase free Postgres | $0 | Tables in their own `stocksense` schema (not exposed to Supabase's Data API) |
+| GitHub Actions keep-alive | $0 | `.github/workflows/keepalive.yml` pings `/healthz?db=1` every 10 min — no cold starts, DB never idles out |
 
-> ⚠️ **Read this before onboarding real merchants:** Render's free tier has an
-> ephemeral filesystem. The SQLite database (`prisma/data/dev.sqlite`) is lost
-> every time the service spins down (~15 min idle), restarts, or redeploys.
-> Merchants would be logged out and their settings/imports wiped. Use Render
-> free only for smoke tests and dev-store demos, then move to Fly.io (step 9)
-> before inviting real merchants.
+Set `DATABASE_URL` on Render to the Supabase **session pooler** URL (port
+5432, IPv4) with `?schema=stocksense&connection_limit=3`. Migrations run on
+boot. Fly.io (step 9) is optional now — only if you outgrow the free tiers.
 
 ---
 
@@ -68,7 +65,7 @@ Cost summary (honest, verified 2026):
 ## Step 3 — Set environment variables
 
 Every variable the app reads is documented in `.env.example` (grep
-`process.env` in `app/` to verify). On the host you set these four (the rest
+`process.env` in `app/` to verify). On the host you set these five (the rest
 are dev-only or host-managed):
 
 ```
@@ -76,6 +73,7 @@ SHOPIFY_API_KEY=<Client ID from step 2>
 SHOPIFY_API_SECRET=<Client secret from step 2>
 SCOPES=read_inventory,read_products,read_orders,read_locations,write_inventory
 SHOPIFY_APP_URL=https://<your-deployed-url>   # THE single base URL — no trailing slash
+DATABASE_URL=postgresql://<role>.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres?schema=stocksense&connection_limit=3
 ```
 
 `SHOPIFY_APP_URL` is the one env var that drives everything: OAuth, billing
@@ -156,18 +154,15 @@ So for real merchants you don't change code — just deploy to a host where
    charged at this point.
 4. Fix any review feedback and resubmit until approved.
 
-## Step 9 — Upgrade to persistent storage (Fly.io) before real merchants
+## Step 9 — Optional: Fly.io
 
-Render free cannot persist SQLite (see the warning at the top). When you're
-ready for production, move to Fly.io — config is already in `fly.toml`
-(persistent volume mounted at `/app/prisma/data`, where the SQLite DB lives
-per `prisma/schema.prisma`):
+Not required — data already persists in Postgres. If you ever want to move
+off Render, the same Docker image runs on Fly.io (`fly.toml`):
 
 ```bash
-# one-time setup (requires a Fly account + credit card; ~$2-3/mo)
+# requires a Fly account + card (~$2-3/mo)
 fly launch --no-deploy
-fly volumes create data --size 1 --region iad
-fly secrets set SHOPIFY_API_KEY=... SHOPIFY_API_SECRET=... SCOPES=... SHOPIFY_APP_URL=...
+fly secrets set SHOPIFY_API_KEY=... SHOPIFY_API_SECRET=... SCOPES=... SHOPIFY_APP_URL=... DATABASE_URL=...
 fly deploy
 ```
 
@@ -189,10 +184,11 @@ npm run build     # succeeds
 | File | Role |
 | --- | --- |
 | `render.yaml` | Render blueprint (free tier, health check, env var list) |
-| `fly.toml` | Fly.io config (persistent volume for SQLite) |
+| `.github/workflows/keepalive.yml` | 10-min ping so the free instance + DB stay warm |
+| `fly.toml` | Optional Fly.io config |
 | `Dockerfile` | Node 22 image, `npm ci` → build → prune → `docker-start` |
 | `shopify.app.toml` | Scopes + webhook subscriptions (API version `2026-07`) |
 | `.env.example` | Complete env var reference (grep `process.env` to verify) |
 | `app/lib/config.ts` | Privacy/terms URLs derived from `SHOPIFY_APP_URL` |
 | `app/routes/healthz.tsx` | Unauthenticated health check for Render/Fly |
-| `app/routes/app.billing.tsx` | `isTest: true` → flip to `false` (step 6) |
+| `app/lib/billing/plans.ts` | `isTestBilling()` — real charges when `NODE_ENV=production` (step 6) |
