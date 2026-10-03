@@ -1,10 +1,10 @@
 name: Keep-alive
 
-# Pings the deployed app every 10 minutes so the Render free instance stays
+# Pings the deployed app every 5 minutes so the Render free instance stays
 # warm (no ~50s cold start for merchants) and the free Postgres stays active.
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 jobs:
