@@ -12,7 +12,7 @@ redirect_urls = [ "https://stocksense-igb7.onrender.com/auth/callback" ]
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 # Must match SCOPES in your host's env vars (see .env.example).
-scopes = "read_inventory,read_products,read_orders,read_locations,write_inventory,read_purchase_orders"
+scopes = "read_inventory,read_products,read_orders,read_locations,write_inventory"
 
 # Privacy policy / terms of service URLs are NOT configurable in this file —
 # Shopify's app config schema has no such fields. They are set in the Partner
