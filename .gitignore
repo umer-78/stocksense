@@ -28,7 +28,3 @@ pnpm-lock.yaml
 .shopify/*
 .shopify.lock
 
-# AI tool artifacts
-.ai/
-AGENTS.md
-CLAUDE.md
