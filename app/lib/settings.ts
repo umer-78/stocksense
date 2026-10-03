@@ -1,5 +1,5 @@
 /**
- * Per-shop forecasting settings, persisted via Prisma (SQLite in dev).
+ * Per-shop forecasting settings, persisted via Prisma (Postgres).
  */
 import db from "../db.server";
 

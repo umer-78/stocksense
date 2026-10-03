@@ -1,13 +1,11 @@
 # Render blueprint for StockSense — FREE tier (no credit card required, verified 2026).
 # Docs: https://render.com/docs/blueprint-spec
 #
-# ⚠️ FREE-TIER LIMITATION (read before deploying real merchants):
-# Render free web services have an EPHEMERAL filesystem. The SQLite database
-# (prisma/data/dev.sqlite) is lost every time the service spins down (after
-# ~15 min idle), restarts, or redeploys. Sessions reset (merchants must
-# re-authenticate) and settings/imports are wiped. Fine for smoke tests and
-# dev-store demos; NOT for production. Upgrade path: fly.toml (persistent
-# volume, ~$2-3/mo, card required) — see DEPLOY.md.
+# Persistence: the free web service has an ephemeral filesystem, so state lives
+# in Postgres (Supabase free tier) via DATABASE_URL — sessions, settings and
+# imports survive spin-downs, restarts and redeploys. A GitHub Actions ping
+# (.github/workflows/keepalive.yml) keeps the service warm so merchants don't
+# hit ~50s cold starts.
 #
 # Deploy: push this repo to GitHub → Render Dashboard → New → Blueprint →
 # select the repo. Fill the `sync: false` env vars in the dashboard.
@@ -32,6 +30,8 @@ services:
       - key: SCOPES
         sync: false
       - key: SHOPIFY_APP_URL
+        sync: false
+      - key: DATABASE_URL
         sync: false
       # Optional: custom shop domains (comma-separated) — see app/shopify.server.ts
       - key: SHOP_CUSTOM_DOMAIN
