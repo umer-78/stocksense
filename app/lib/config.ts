@@ -22,4 +22,4 @@ export const TERMS_OF_SERVICE_URL = baseUrl
   : "/terms.html";
 
 /** Contact email shown in the privacy policy / terms pages. */
-export const CONTACT_EMAIL = "support@stocksense.example.com";
+export const CONTACT_EMAIL = "umerhashmi987@gmail.com";

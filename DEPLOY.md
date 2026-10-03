@@ -32,8 +32,7 @@ boot. Fly.io (step 9) is optional now — only if you outgrow the free tiers.
    `shopify.app.toml` → `[access_scopes]` and the `SCOPES` env var):
 
    ```
-   read_inventory, read_products, read_orders, read_locations,
-   write_inventory
+   read_inventory, read_products, read_orders, read_locations
    ```
 
 3. **App setup → App details → URLs:**
@@ -71,7 +70,7 @@ are dev-only or host-managed):
 ```
 SHOPIFY_API_KEY=<Client ID from step 2>
 SHOPIFY_API_SECRET=<Client secret from step 2>
-SCOPES=read_inventory,read_products,read_orders,read_locations,write_inventory
+SCOPES=read_inventory,read_products,read_orders,read_locations
 SHOPIFY_APP_URL=https://<your-deployed-url>   # THE single base URL — no trailing slash
 DATABASE_URL=postgresql://<role>.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres?schema=stocksense&connection_limit=3
 ```
