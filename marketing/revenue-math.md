@@ -74,8 +74,8 @@ That is an estimate, not a plan guarantee.
 - Support: answering merchants, walking them through installs
 - The unlisted phase: watching webhooks/billing on real stores, fixing issues
 - App Store listing assets + review process (30–50 day queue, $19 fee)
-- Moving to Fly.io before onboarding real merchants (DEPLOY.md step 9) — this
-  is a manual, account-level step
+- Paying the $19 App Store registration fee and passing review (required
+  before any real store can install, even unlisted)
 
 ---
 
@@ -83,17 +83,14 @@ That is an estimate, not a plan guarantee.
 
 **Risk 1 — Public review queue (30–50 days) + $19 fee delays the main channel.**
 The App Store listing is the biggest distribution lever, and it's the slowest.
-*Mitigation:* launch unlisted now, drive direct-link installs from the free
-channels, and have the full listing (this file's sibling,
-`marketing/app-store-listing.md`) ready so submission is one form-fill when the
-time comes.
+*Mitigation:* submit as early as possible (review is required even for an
+unlisted app), collect early-access emails from the site and outreach while
+waiting, and keep the listing (`marketing/app-store-listing.md`) accurate so
+review passes first time.
 
-**Risk 2 — Render free tier wipes SQLite on spin-down (data loss for real
-merchants).**
-DEPLOY.md documents this: settings, imports and sessions are lost on every
-restart. Fine for dev stores, unacceptable for paying merchants.
-*Mitigation:* move to Fly.io (~$2–3/mo, persistent volume) BEFORE onboarding
-real merchants. This is a hard gate, not a nice-to-have.
+**Risk 2 — Free-tier hosting limits (resolved).** Data now lives in Supabase
+Postgres, so Render restarts no longer wipe it, and a keep-alive ping avoids
+cold starts. Revisit only if traffic outgrows the free tiers.
 
 **Risk 3 — Expectation mismatch on the Stocky import.**
 Merchants migrating from Stocky may expect a full 1:1 replacement. The import

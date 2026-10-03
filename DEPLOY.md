@@ -135,16 +135,15 @@ So for real merchants you don't change code — just deploy to a host where
 `NODE_ENV=production` (the default on Render/Fly), or set
 `SHOPIFY_BILLING_TEST=false`. Nothing is charged on dev stores regardless.
 
-## Step 7 — Launch UNLISTED first ⚠️ (your account)
+## Step 7 — Unlisted still needs review ⚠️
 
-1. Partner Dashboard → **Apps → StockSense → Distribution → Manage app
-   availability**.
-2. Set status to **Unlisted** (not "Public"). The app is installable via
-   direct link but does not appear in the App Store search.
-3. Install it on a real store and watch for a few days: webhooks firing,
-   billing charges (now real — step 6), no crashes.
+Real (non-development) stores can't install a public app until it passes App
+Store review — even when its visibility is **Unlisted**. Before approval, only
+development stores can install it. So step 8 is the gate to any revenue; choose
+Unlisted visibility there if you want a quiet launch (installable by direct
+link, hidden from App Store search).
 
-## Step 8 — Submit for public review ⚠️ (your account, $19 fee)
+## Step 8 — Submit for review ⚠️ (your account, $19 one-time registration fee)
 
 1. Partner Dashboard → **Distribution → Manage app availability → Public**.
 2. Fill in the listing (icon, screenshots, description, category) and the
