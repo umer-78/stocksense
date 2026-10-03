@@ -9,12 +9,11 @@ generator client {
 // enough when changing adapters.
 // See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
 datasource db {
-  provider = "sqlite"
-  // Relative to this file's directory (prisma/), so the database lives at
-  // prisma/data/dev.sqlite. Kept out of prisma/migrations so a hosting volume
-  // can be mounted at prisma/data without shadowing the migration files
-  // (see fly.toml). Local dev: `shopify app dev` creates prisma/data/dev.sqlite.
-  url      = "file:data/dev.sqlite"
+  provider = "postgresql"
+  // Postgres (Supabase free tier) — persistent across Render free-tier
+  // restarts/redeploys. Use the Supabase *session* pooler URL (port 5432,
+  // IPv4) with ?schema=stocksense. See .env.example and DEPLOY.md.
+  url      = env("DATABASE_URL")
 }
 
 model Session {
