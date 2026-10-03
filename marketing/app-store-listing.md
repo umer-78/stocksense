@@ -41,8 +41,9 @@ Stocky, Shopify's native inventory app, shut down on August 31, 2026. StockSense
 **Works per location, reads only.** Forecast one inventory location at a time — the app only reads your inventory, never writes.
 
 **Plans for every size of store:**
-
-
+- **Free** — up to 100 SKUs: forecasts, urgency dashboard, Stocky import.
+- **Growth ($19/mo)** — up to 2,000 SKUs, adds seasonality and the purchase order builder. 14-day free trial.
+- **Pro ($49/mo)** — unlimited SKUs, everything in Growth. 14-day free trial.
 
 **What StockSense does not do (yet):** it does not place or email orders (CSV export only); it does not manage suppliers or receiving; it forecasts one location at a time; and it only reads your inventory, never writes.
 
@@ -91,7 +92,7 @@ Both pages are served by the app itself and derive from the single `SHOPIFY_APP_
 
 Enter these in Partner Dashboard → App setup → App details. There is no second base URL to keep in sync — one env var drives OAuth, billing return URLs, and both legal pages (see DEPLOY.md step 2).
 
-The contact email shown on both pages is `support@stocksense.example.com` (`app/lib/config.ts`) — replace it with a real address before submitting for review.
+The contact email shown on both pages is `umerhashmi987@gmail.com` (`app/lib/config.ts`).
 
 ---
 
@@ -105,7 +106,7 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 
 **Billing flow.**
 - Paid plans (Growth $19/mo, Pro $49/mo) use Shopify's Billing API with a 14-day trial on both.
-- `isTest: true` is still set in `app/routes/app.billing.tsx` (line ~69) — required for dev-store testing. It must be flipped to `false` before real merchants are charged (DEPLOY.md step 6). Reviewers testing on dev stores will see simulated charges.
+- Test vs. real charges is env-driven (`isTestBilling()` in `app/lib/billing/plans.ts`): real charges in production, simulated charges on development stores, so reviewers testing on dev stores see simulated charges.
 - Plan gating is enforced server-side on every route (`app/lib/billing/plans.ts`): SKU caps, seasonality, PO builder, and Stocky import are all feature-flagged per plan.
 
 **Access scopes and why.**
@@ -115,7 +116,6 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 | `read_products` | Read product + variant titles and SKUs for the dashboard |
 | `read_orders` | Read order line items to compute sales velocity (the forecast's core input) |
 | `read_locations` | List locations so merchants can pick which one to forecast against |
-| `write_inventory` | Requested but currently unused — the app only reads inventory today; reserved for future features |
 
 **Honesty notes for reviewers.**
 - The app does not write inventory, does not place orders, and does not email suppliers. PO output is CSV export only.
