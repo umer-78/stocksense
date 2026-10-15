@@ -23,6 +23,23 @@ updates:
       semver-minor-days: 14
       semver-patch-days: 14
 
+    # Majors blocked by peer dependencies: @shopify/polaris 12 requires React 18
+    # and @shopify/shopify-app-session-storage-prisma 9 requires Prisma 6. These
+    # PRs can only fail CI; upgrade them together with those packages instead.
+    ignore:
+      - dependency-name: 'react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-dom'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/react-dom'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'prisma'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@prisma/client'
+        update-types: ['version-update:semver-major']
+
     groups:
 
       # Group together PRs of dependant packages

@@ -166,6 +166,77 @@ fly deploy
 
 The Dockerfile is shared with Render, so the same image works on both.
 
+## Step 10 — Marketing site: domain, Google Search Console, sitemap ⚠️ (your accounts)
+
+The landing page is `docs/` on `main`, served by GitHub Pages at
+<https://umer-78.github.io/stocksense/>. Pages: `index.html`,
+`stocky-replacement.html`, `reorder-point-calculator.html`, the legal pages
+and `404.html`, plus `sitemap.xml` and `robots.txt`.
+
+### Connect a custom domain (optional, recommended for SEO)
+
+1. Buy the domain (Cloudflare, Namecheap, Porkbun…).
+2. DNS at the registrar:
+   - Apex (`example.com`): four `A` records → `185.199.108.153`,
+     `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
+     (and optionally `AAAA` → `2606:50c0:8000::153`, `…8001::153`,
+     `…8002::153`, `…8003::153`).
+   - `www`: `CNAME` → `umer-78.github.io`.
+3. Point the site at the domain (replace `example.com`):
+
+   ```bash
+   echo "example.com" > docs/CNAME
+   grep -rl 'https://umer-78.github.io/stocksense' docs | xargs sed -i 's#https://umer-78.github.io/stocksense#https://example.com#g'
+   ```
+
+   Then in `.github/workflows/site.yml` change the two
+   `umer-78\.github\.io/stocksense/` patterns to `example\.com/`.
+
+4. Commit and push to `main`, then **Settings → Pages → Custom domain**:
+   confirm the domain, wait for the DNS check, tick **Enforce HTTPS**.
+5. Optional but recommended: **Settings → Pages → Verify a domain** (or
+   GitHub profile → Settings → Pages) to stop anyone else claiming it.
+
+`robots.txt` only takes effect at a domain root, so it starts working once the
+custom domain is live.
+
+### Google Search Console
+
+1. <https://search.google.com/search-console> → **Add property**.
+   - Custom domain: choose **Domain**, add the `TXT` record Google gives you
+     at your DNS provider.
+   - Still on github.io: choose **URL prefix**
+     `https://umer-78.github.io/stocksense/` → **HTML tag** method. Paste the
+     `<meta name="google-site-verification" …>` tag in `docs/index.html`
+     where the comment marks it, push to `main`, wait for Pages to deploy,
+     then click **Verify**.
+2. **Sitemaps** → submit `sitemap.xml` (full URL:
+   `https://umer-78.github.io/stocksense/sitemap.xml`, or your domain).
+3. **URL inspection** → paste each page URL → **Request indexing**.
+4. Optional: do the same in Bing Webmaster Tools (it can import from Search
+   Console in one click).
+
+When you add a page, add it to `docs/sitemap.xml` and bump `lastmod`.
+
+## Step 11 — AI and GitHub tooling ⚠️ (one-time secrets)
+
+| Workflow | What it does | Needs |
+| --- | --- | --- |
+| `claude.yml` | Mention `@claude` in an issue or PR to get answers or fixes | `ANTHROPIC_API_KEY` **or** `CLAUDE_CODE_OAUTH_TOKEN` secret + the [Claude GitHub App](https://github.com/apps/claude) |
+| `claude-review.yml` | AI review on every non-draft PR (skips until a secret exists) | same secret |
+| `codeql.yml` | GitHub code scanning for JS/TS and workflows; results in **Security → Code scanning** | nothing (free on public repos) |
+| `site.yml` | Broken-link check and Lighthouse (speed, accessibility, SEO) for `docs/`; weekly link-rot check | nothing |
+| `keepalive.yml` | Pings `/healthz?db=1`, retrying through Render cold starts | nothing |
+| `dependabot.yml` | Weekly dependency PRs; skips React/Prisma majors the Shopify packages can't take yet | nothing |
+
+Add secrets in **Settings → Secrets and variables → Actions**. Get an API key at
+<https://console.anthropic.com>, or run `claude setup-token` with a Claude
+subscription for an OAuth token. Running `/install-github-app` inside Claude
+Code does the app install and secret in one step.
+
+If **Settings → Code security → CodeQL** is on "Default setup", switch it off
+(or delete `codeql.yml`): the two can't run together.
+
 ---
 
 ## Verification checklist (run before each deploy)
@@ -182,7 +253,8 @@ npm run build     # succeeds
 | File | Role |
 | --- | --- |
 | `render.yaml` | Render blueprint (free tier, health check, env var list) |
-| `.github/workflows/keepalive.yml` | 10-min ping so the free instance + DB stay warm |
+| `.github/workflows/keepalive.yml` | Scheduled ping so the free instance + DB stay warm |
+| `docs/` | Marketing site (GitHub Pages), sitemap, robots.txt — see step 10 |
 | `fly.toml` | Optional Fly.io config |
 | `Dockerfile` | Node 22 image, `npm ci` → build → prune → `docker-start` |
 | `shopify.app.toml` | Scopes + webhook subscriptions (API version `2026-07`) |
