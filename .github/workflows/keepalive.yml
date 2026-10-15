@@ -1,7 +1,11 @@
 name: Keep-alive
 
-# Pings the deployed app every 5 minutes so the Render free instance stays
-# warm (no ~50s cold start for merchants) and the free Postgres stays active.
+# Pings the deployed app so the Render free instance and the free Postgres stay
+# active. GitHub runs scheduled workflows on a best-effort basis (often hours
+# apart, not every 5 minutes), so a ping often lands on a sleeping instance;
+# the retries below give Render time to wake instead of failing on the first
+# 502s of a cold start. For a true 5-minute ping, point a free uptime monitor
+# (UptimeRobot, cron-job.org) at the same URL.
 on:
   schedule:
     - cron: "*/5 * * * *"
@@ -10,7 +14,9 @@ on:
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 6
     steps:
       - name: Ping /healthz?db=1
-        run: curl -fsS --retry 3 --retry-delay 20 --max-time 90 "https://stocksense-igb7.onrender.com/healthz?db=1"
+        run: >-
+          curl -fsS --retry 10 --retry-delay 20 --retry-all-errors --retry-max-time 270
+          --max-time 60 "https://stocksense-igb7.onrender.com/healthz?db=1"

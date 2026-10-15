@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en" data-site="stocksense">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reorder Point Calculator (Free, with Formulas) | StockSense</title>
+<meta name="description" content="Free reorder point calculator: daily sales, days to stockout, safety stock, reorder point and how many units to order. Formulas and worked example.">
+<meta name="keywords" content="reorder point calculator, reorder point formula, safety stock formula, days to stockout, how much inventory to order, Shopify reorder point, lead time demand">
+<link rel="canonical" href="https://umer-78.github.io/stocksense/reorder-point-calculator.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Umer Hashmi">
+<meta name="theme-color" content="#0f5c43">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="StockSense">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Reorder point calculator (free, with formulas)">
+<meta property="og:description" content="Work out days to stockout, safety stock, reorder point and how many units to order.">
+<meta property="og:url" content="https://umer-78.github.io/stocksense/reorder-point-calculator.html">
+<meta property="og:image" content="https://umer-78.github.io/stocksense/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Reorder point calculator (free, with formulas)">
+<meta name="twitter:description" content="Work out days to stockout, safety stock, reorder point and how many units to order.">
+<meta name="twitter:image" content="https://umer-78.github.io/stocksense/og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f5c43'/%3E%3Cpath d='M9 20h3v-6H9zM14.5 20h3V9h-3zM20 20h3v-9h-3z' fill='%23f3efe4'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "Reorder point calculator",
+      "url": "https://umer-78.github.io/stocksense/reorder-point-calculator.html",
+      "description": "Calculate daily sales, days to stockout, safety stock, reorder point and suggested order quantity.",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Any (runs in the browser)",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Person", "name": "Umer Hashmi", "url": "https://github.com/umer-78" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "StockSense", "item": "https://umer-78.github.io/stocksense/" },
+        { "@type": "ListItem", "position": 2, "name": "Reorder point calculator", "item": "https://umer-78.github.io/stocksense/reorder-point-calculator.html" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is the reorder point formula?", "acceptedAnswer": { "@type": "Answer", "text": "Reorder point = lead-time demand + safety stock, where lead-time demand is average daily sales multiplied by supplier lead time in days. When on-hand stock falls to the reorder point, it is time to place an order." } },
+        { "@type": "Question", "name": "How do I calculate safety stock?", "acceptedAnswer": { "@type": "Answer", "text": "A simple, common approach is a percentage of lead-time demand, for example 20%. Raise it for unreliable suppliers or volatile sales, lower it for steady sellers with dependable delivery." } },
+        { "@type": "Question", "name": "How do I calculate days to stockout?", "acceptedAnswer": { "@type": "Answer", "text": "Divide units on hand by average daily sales. 6 units on hand selling 0.7 per day gives about 8.6 days." } },
+        { "@type": "Question", "name": "How many units should I reorder?", "acceptedAnswer": { "@type": "Answer", "text": "Order enough to reach your target days of cover plus safety stock, minus what you have on hand: daily sales x target days + safety stock - on hand." } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  @font-face { font-family: "Fraunces"; font-style: normal; font-weight: 600 700; font-display: swap; src: url(fonts/fraunces-latin.woff2) format("woff2"); }
+  :root {
+    --paper: #f5f1e8; --paper-2: #efe9db; --card: #fbf9f3; --ink: #1d2a21; --ink-soft: #3f4a40;
+    --muted: #616357; --line: #d9d2c0; --line-strong: #c3bba5; --accent: #0f5c43; --accent-ink: #f3efe4; --amber: #a2521a;
+    --crit: #9a2b25; --ok: #3f6b2f;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14160f; --paper-2: #191b12; --card: #1e2017; --ink: #eae6d6; --ink-soft: #c3c1b1;
+      --muted: #938f7e; --line: #2f3225; --line-strong: #3d402f; --accent: #5bbd92; --accent-ink: #0c130d; --amber: #d78a4a;
+      --crit: #e0756b; --ok: #8fc06a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.7 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 480px) { .wrap { padding: 0 16px; } }
+  header.top { border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1080px; display: flex; align-items: center; gap: 18px; height: 64px; }
+  .brand { font-family: var(--serif); font-weight: 700; font-size: 20px; letter-spacing: -0.02em; display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); }
+  .brand .mark { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: inline-grid; place-items: center; }
+  .brand .mark svg { width: 15px; height: 15px; }
+  .btn { display: inline-flex; align-items: center; font: 600 15px/1 var(--sans); text-decoration: none; padding: 10px 15px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); }
+  .bar .btn { margin-left: auto; }
+  .crumbs { font-size: 14px; color: var(--muted); margin: 28px 0 0; }
+  .crumbs a { color: var(--muted); }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.12; letter-spacing: -0.01em; }
+  h1 { font-size: clamp(32px, 5vw, 46px); margin: 14px 0 16px; }
+  h2 { font-size: clamp(24px, 3.2vw, 30px); margin: 44px 0 12px; }
+  h3 { font-size: 20px; margin: 28px 0 8px; }
+  p, li { color: var(--ink-soft); }
+  .lead { font-size: 19px; }
+  ol, ul { padding-left: 22px; }
+  li { margin: 6px 0; }
+  code, .f { font: 500 0.9em/1.5 var(--mono); }
+  .f { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; color: var(--ink); overflow-x: auto; white-space: pre-wrap; }
+
+  /* calculator */
+  .calc { background: var(--card); border: 1px solid var(--line-strong); border-radius: 12px; margin: 28px 0; overflow: hidden; }
+  .calc form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; padding: 20px 22px; }
+  @media (max-width: 560px) { .calc form { grid-template-columns: 1fr; padding: 18px 16px; } }
+  .calc label { display: block; font: 600 14px/1.3 var(--sans); color: var(--ink); }
+  .calc label span { display: block; font-weight: 400; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .calc input { width: 100%; margin-top: 6px; font: 500 17px/1.2 var(--mono); color: var(--ink); background: var(--paper); border: 1px solid var(--line-strong); border-radius: 7px; padding: 10px 12px; }
+  .calc input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .out { border-top: 1px solid var(--line); padding: 8px 22px 16px; background: var(--paper-2); }
+  @media (max-width: 560px) { .out { padding: 8px 16px 14px; } }
+  .r { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .r:last-of-type { border-bottom: 0; }
+  .r .k { color: var(--ink-soft); }
+  .r .k small { display: block; color: var(--muted); font-size: 12.5px; }
+  .r .v { font: 600 15px/1.3 var(--mono); white-space: nowrap; text-align: right; }
+  .r.key .v { color: var(--accent); font-size: 18px; }
+  .status { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; font-size: 14.5px; font-weight: 600; }
+  .status.crit { color: var(--crit); background: color-mix(in srgb, var(--crit) 12%, transparent); }
+  .status.low { color: var(--amber); background: color-mix(in srgb, var(--amber) 12%, transparent); }
+  .status.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+
+  .cta { background: var(--card); border: 1px solid var(--line-strong); border-radius: 12px; padding: 24px; margin: 48px 0 8px; }
+  .cta h2 { margin-top: 0; }
+  footer { border-top: 1px solid var(--line); margin-top: 56px; padding: 28px 0 48px; }
+  .foot { display: flex; flex-wrap: wrap; gap: 12px 24px; font-size: 14.5px; }
+  .foot a { color: var(--ink-soft); text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="./" aria-label="StockSense home">
+      <span class="mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 21h3v-7H9zM14.5 21h3V8h-3zM20 21h3v-10h-3z" fill="#f3efe4"/></svg></span>
+      StockSense
+    </a>
+    <a class="btn" href="mailto:umerhashmi987@gmail.com?subject=StockSense%20early%20access">Get early access</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="./">StockSense</a> / Reorder point calculator</nav>
+  <h1>Reorder point calculator</h1>
+  <p class="lead">Enter one product's numbers to see when it runs out, when to reorder, and how many units to order. Everything runs in your browser and nothing is sent anywhere.</p>
+
+  <div class="calc">
+    <form id="calc" autocomplete="off" onsubmit="return false">
+      <label>Units sold<span>in the period below</span><input id="sold" type="number" inputmode="decimal" min="0" step="any" value="42"></label>
+      <label>Over how many days<span>e.g. the last 60 days</span><input id="days" type="number" inputmode="numeric" min="1" step="1" value="60"></label>
+      <label>Units on hand<span>sellable stock today</span><input id="onhand" type="number" inputmode="numeric" min="0" step="1" value="6"></label>
+      <label>Supplier lead time (days)<span>order placed to stock sellable</span><input id="lead" type="number" inputmode="numeric" min="0" step="1" value="14"></label>
+      <label>Safety stock (%)<span>buffer on lead-time demand</span><input id="safety" type="number" inputmode="numeric" min="0" max="100" step="1" value="20"></label>
+      <label>Target cover (days)<span>how long one order should last</span><input id="target" type="number" inputmode="numeric" min="1" max="365" step="1" value="30"></label>
+    </form>
+    <div class="out" aria-live="polite">
+      <div class="r"><span class="k">Average daily sales<small id="w-vel">units sold &divide; days</small></span><span class="v" id="o-vel">0.70 / day</span></div>
+      <div class="r"><span class="k">Days to stockout<small id="w-dts">on hand &divide; daily sales</small></span><span class="v" id="o-dts">8.6 days</span></div>
+      <div class="r"><span class="k">Lead-time demand<small id="w-ltd">daily sales &times; lead time</small></span><span class="v" id="o-ltd">9.8</span></div>
+      <div class="r"><span class="k">Safety stock<small id="w-ss">lead-time demand &times; safety %, rounded up</small></span><span class="v" id="o-ss">2</span></div>
+      <div class="r"><span class="k">Reorder point<small id="w-rop">lead-time demand + safety stock, rounded up</small></span><span class="v" id="o-rop">12</span></div>
+      <div class="r key"><span class="k">Suggested order<small id="w-qty">daily sales &times; target days + safety stock &minus; on hand</small></span><span class="v" id="o-qty">17 units</span></div>
+      <p class="status crit" id="o-status">Critical: stock runs out in 8.6 days, before a new order could arrive (14 days).</p>
+    </div>
+  </div>
+
+  <h2>The formulas</h2>
+  <p>These are the same formulas the StockSense app uses for every variant, so you can check any number it shows you.</p>
+  <h3>Average daily sales</h3>
+  <code class="f">daily sales = units sold &divide; calendar days in the period</code>
+  <p>Count every calendar day, including days with zero sales. Averaging only over days that had sales overstates demand.</p>
+  <h3>Days to stockout</h3>
+  <code class="f">days to stockout = units on hand &divide; daily sales</code>
+  <h3>Lead-time demand and safety stock</h3>
+  <code class="f">lead-time demand = daily sales &times; lead time (days)
+safety stock     = lead-time demand &times; safety %   (round up)</code>
+  <p>Lead-time demand is what you expect to sell while waiting for a delivery. Safety stock covers a late shipment or a busier-than-usual week.</p>
+  <h3>Reorder point</h3>
+  <code class="f">reorder point = lead-time demand + safety stock   (round up)</code>
+  <p>When stock on hand falls to the reorder point, place the order. Waiting longer means the new stock arrives after you have sold out.</p>
+  <h3>How many units to order</h3>
+  <code class="f">order quantity = daily sales &times; target days + safety stock &minus; on hand</code>
+  <p>If the result is zero or negative you have enough stock; no order is needed yet.</p>
+
+  <h2>Worked example</h2>
+  <p>A running shoe sold 42 pairs in the last 60 days and you have 6 left. Your supplier takes 14 days, you keep a 20% buffer, and each order should last 30 days.</p>
+  <ol>
+    <li>Daily sales: 42 &divide; 60 = <strong>0.70 per day</strong>.</li>
+    <li>Days to stockout: 6 &divide; 0.70 = <strong>8.6 days</strong>.</li>
+    <li>Lead-time demand: 0.70 &times; 14 = <strong>9.8 units</strong>.</li>
+    <li>Safety stock: 9.8 &times; 20% = 1.96, rounded up to <strong>2 units</strong>.</li>
+    <li>Reorder point: 9.8 + 2 = 11.8, rounded up to <strong>12 units</strong>. You have 6, so you are past it.</li>
+    <li>Order quantity: 0.70 &times; 30 = 21, plus 2 safety stock = 23, minus 6 on hand = <strong>17 units</strong>.</li>
+  </ol>
+  <p>Stock runs out in 8.6 days but a new delivery takes 14, so this product will sell out for about five days even if you order today. That is the case the calculator marks <strong>critical</strong>.</p>
+
+  <h2>Choosing your inputs</h2>
+  <ul>
+    <li><strong>Sales period:</strong> 60 days suits most products. Use a shorter window for fast-changing trends and a longer one for slow sellers. With fewer than 14 days of history, treat the result as a rough guess.</li>
+    <li><strong>Lead time:</strong> use what actually happened on your last few orders, not the supplier's quoted time. Include shipping and the time to get stock on the shelf.</li>
+    <li><strong>Safety stock:</strong> 20% is a sensible start. Go higher for unreliable suppliers, long lead times or volatile sales.</li>
+    <li><strong>Target cover:</strong> match how often you place orders. Reordering monthly suggests about 30 days.</li>
+  </ul>
+
+  <h2>Common mistakes</h2>
+  <ul>
+    <li><strong>Counting days you were sold out as slow days.</strong> If a product was out of stock for part of the period, its true demand was higher than the sales show. Shorten the period to when it was in stock.</li>
+    <li><strong>Ignoring lead time.</strong> Reordering when you hit zero guarantees a gap. The reorder point exists to account for the wait.</li>
+    <li><strong>One setting for every product.</strong> A supplier overseas and one down the road need different lead times.</li>
+  </ul>
+
+  <h2>Questions</h2>
+  <h3>What is the reorder point formula?</h3>
+  <p>Reorder point = lead-time demand + safety stock, where lead-time demand is average daily sales multiplied by supplier lead time in days.</p>
+  <h3>How do I calculate safety stock?</h3>
+  <p>A simple, common approach is a percentage of lead-time demand, such as 20%. Raise it for unreliable suppliers or volatile sales, lower it for steady sellers with dependable delivery.</p>
+  <h3>How is this different from the StockSense app?</h3>
+  <p>The math is identical. The app runs it for every variant in your Shopify store automatically, using your real order history, ranks what needs attention, and builds a purchase order. On Growth and Pro it also adjusts for day-of-week sales patterns.</p>
+
+  <div class="cta">
+    <h2>Run this for every product, automatically</h2>
+    <p>StockSense calculates days to stockout and reorder quantities for every Shopify variant from your real sales, and shows the math behind each one. It is in early access during App Store review.</p>
+    <a class="btn" href="mailto:umerhashmi987@gmail.com?subject=StockSense%20early%20access">Get early access</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <a href="./">Home</a>
+    <a href="./#pricing">Pricing</a>
+    <a href="./#faq">FAQ</a>
+    <a href="stocky-replacement.html">Stocky replacement guide</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Service</a>
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Mirrors app/lib/forecast/reorder.ts and app/lib/dashboard.ts classifyStatus.
+  var $ = function (id) { return document.getElementById(id); };
+  var num = function (id, min, max, dflt) {
+    var v = parseFloat($(id).value);
+    if (!isFinite(v)) v = dflt;
+    return Math.min(max, Math.max(min, v));
+  };
+  var fmt = function (v) {
+    var r = Math.round(v * 10) / 10;
+    return r % 1 === 0 ? String(r) : r.toFixed(1);
+  };
+  function calc() {
+    var sold = num("sold", 0, 1e9, 0);
+    var days = num("days", 1, 3650, 60);
+    var onHand = num("onhand", 0, 1e9, 0);
+    var lead = num("lead", 0, 365, 14);
+    var pct = num("safety", 0, 100, 20) / 100;
+    var target = num("target", 1, 365, 30);
+
+    var vel = sold / days;
+    var ltd = vel * lead;
+    var ss = Math.ceil(ltd * pct);
+    var rop = Math.ceil(ltd + ss);
+    var level = Math.ceil(vel * target + ss);
+    var qty = Math.max(0, level - onHand);
+    var dts = vel === 0 ? Infinity : onHand / vel;
+
+    $("o-vel").textContent = vel.toFixed(2) + " / day";
+    $("w-vel").textContent = fmt(sold) + " units ÷ " + fmt(days) + " days";
+    $("o-dts").textContent = isFinite(dts) ? fmt(dts) + " days" : "no sales";
+    $("w-dts").textContent = isFinite(dts) ? fmt(onHand) + " on hand ÷ " + vel.toFixed(2) + " per day" : "no projected stockout";
+    $("o-ltd").textContent = fmt(ltd);
+    $("w-ltd").textContent = vel.toFixed(2) + " / day × " + fmt(lead) + " days";
+    $("o-ss").textContent = String(ss);
+    $("w-ss").textContent = fmt(ltd) + " × " + Math.round(pct * 100) + "%, rounded up";
+    $("o-rop").textContent = String(rop);
+    $("w-rop").textContent = fmt(ltd) + " + " + ss + ", rounded up" + (onHand <= rop ? ". On hand is at or below it" : "");
+    $("o-qty").textContent = qty + (qty === 1 ? " unit" : " units");
+    $("w-qty").textContent = fmt(target) + " days of cover (" + fmt(vel * target) + ") + " + ss + " safety − " + fmt(onHand) + " on hand";
+
+    var s = $("o-status");
+    if (isFinite(dts) && dts < lead) {
+      s.className = "status crit";
+      s.textContent = "Critical: stock runs out in " + fmt(dts) + " days, before a new order could arrive (" + fmt(lead) + " days). Order now.";
+    } else if (isFinite(dts) && dts < lead * 2) {
+      s.className = "status low";
+      s.textContent = "Low: stock runs out in " + fmt(dts) + " days, within twice your lead time. Plan the order soon.";
+    } else {
+      s.className = "status ok";
+      s.textContent = isFinite(dts) ? "Healthy: about " + fmt(dts) + " days of stock left." : "Healthy: no sales in the period, so no projected stockout.";
+    }
+  }
+  $("calc").addEventListener("input", calc);
+  calc();
+})();
+</script>
+</body>
+</html>
