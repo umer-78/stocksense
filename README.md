@@ -86,7 +86,7 @@ Stocky CSV parser, import limits, and the GDPR webhook handlers.
 
 See **[DEPLOY.md](DEPLOY.md)** — a copy-paste runbook for Render + Supabase
 (free tier), the marketing site's custom domain and Google Search Console
-setup, and the AI/GitHub workflows (Claude, CodeQL, site checks).
+setup, and the free GitHub workflows (CodeQL, site checks).
 
 ## Marketing
 

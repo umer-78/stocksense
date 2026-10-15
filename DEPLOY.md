@@ -173,7 +173,10 @@ The landing page is `docs/` on `main`, served by GitHub Pages at
 `stocky-replacement.html`, `reorder-point-calculator.html`, the legal pages
 and `404.html`, plus `sitemap.xml` and `robots.txt`.
 
-### Connect a custom domain (optional, recommended for SEO)
+### Connect a custom domain (optional — skip it to stay at $0)
+
+The free `umer-78.github.io/stocksense/` address works with Search Console and
+Google indexing; a custom domain only adds branding (about $10/year).
 
 1. Buy the domain (Cloudflare, Namecheap, Porkbun…).
 2. DNS at the registrar:
@@ -218,21 +221,16 @@ custom domain is live.
 
 When you add a page, add it to `docs/sitemap.xml` and bump `lastmod`.
 
-## Step 11 — AI and GitHub tooling ⚠️ (one-time secrets)
+## Step 11 — GitHub tooling (all free, nothing to set up)
 
-| Workflow | What it does | Needs |
-| --- | --- | --- |
-| `claude.yml` | Mention `@claude` in an issue or PR to get answers or fixes | `ANTHROPIC_API_KEY` **or** `CLAUDE_CODE_OAUTH_TOKEN` secret + the [Claude GitHub App](https://github.com/apps/claude) |
-| `claude-review.yml` | AI review on every non-draft PR (skips until a secret exists) | same secret |
-| `codeql.yml` | GitHub code scanning for JS/TS and workflows; results in **Security → Code scanning** | nothing (free on public repos) |
-| `site.yml` | Broken-link check and Lighthouse (speed, accessibility, SEO) for `docs/`; weekly link-rot check | nothing |
-| `keepalive.yml` | Pings `/healthz?db=1`, retrying through Render cold starts | nothing |
-| `dependabot.yml` | Weekly dependency PRs; skips React/Prisma majors the Shopify packages can't take yet | nothing |
+| Workflow | What it does |
+| --- | --- |
+| `codeql.yml` | GitHub code scanning for JS/TS and workflows; results in **Security → Code scanning** (free on public repos) |
+| `site.yml` | Broken-link check and Lighthouse (speed, accessibility, SEO) for `docs/`; weekly link-rot check |
+| `keepalive.yml` | Pings `/healthz?db=1`, retrying through Render cold starts |
+| `dependabot.yml` | Weekly dependency PRs; skips React/Prisma majors the Shopify packages can't take yet |
 
-Add secrets in **Settings → Secrets and variables → Actions**. Get an API key at
-<https://console.anthropic.com>, or run `claude setup-token` with a Claude
-subscription for an OAuth token. Running `/install-github-app` inside Claude
-Code does the app install and secret in one step.
+GitHub Actions minutes are free and unlimited for public repositories.
 
 If **Settings → Code security → CodeQL** is on "Default setup", switch it off
 (or delete `codeql.yml`): the two can't run together.
