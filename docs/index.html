@@ -3,31 +3,90 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>StockSense — reorder before you run out</title>
-<meta name="description" content="Inventory forecasting for Shopify. Sales velocity, days-to-stockout and reorder quantities for every variant, with the arithmetic shown behind every number. A Stocky replacement.">
+<title>StockSense: Shopify Inventory Forecasting &amp; Stocky Replacement</title>
+<meta name="description" content="Shopify inventory forecasting and Stocky replacement. Days to stockout, reorder points and order quantities for every variant, with the math shown.">
+<meta name="keywords" content="Stocky replacement, Stocky alternative, Shopify inventory forecasting, Shopify reorder point, days to stockout, Shopify purchase order app, inventory planning Shopify">
+<link rel="canonical" href="https://umer-78.github.io/stocksense/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Umer Hashmi">
 <meta name="theme-color" content="#0f5c43">
+<!-- Google Search Console: paste the <meta name="google-site-verification" content="..."> tag from Search Console on the next line. -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="StockSense — reorder before you run out">
-<meta property="og:description" content="Inventory forecasting for Shopify, with the math shown behind every reorder number.">
+<meta property="og:site_name" content="StockSense">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="StockSense: reorder before you run out">
+<meta property="og:description" content="Inventory forecasting for Shopify, with the math shown behind every reorder number. A Stocky replacement.">
 <meta property="og:url" content="https://umer-78.github.io/stocksense/">
 <meta property="og:image" content="https://umer-78.github.io/stocksense/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="StockSense forecast card showing days to stockout and a suggested reorder quantity">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="StockSense: reorder before you run out">
+<meta name="twitter:description" content="Inventory forecasting for Shopify, with the math shown behind every reorder number.">
+<meta name="twitter:image" content="https://umer-78.github.io/stocksense/og.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f5c43'/%3E%3Cpath d='M9 20h3v-6H9zM14.5 20h3V9h-3zM20 20h3v-9h-3z' fill='%23f3efe4'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Newsreader:ital@0;1&display=swap">
+<link rel="sitemap" type="application/xml" href="sitemap.xml">
+<link rel="preload" href="fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/newsreader-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://umer-78.github.io/stocksense/#website",
+      "url": "https://umer-78.github.io/stocksense/",
+      "name": "StockSense",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "StockSense",
+      "url": "https://umer-78.github.io/stocksense/",
+      "description": "Inventory forecasting app for Shopify: sales velocity, days-to-stockout, reorder points and suggested order quantities for every variant, with the arithmetic shown. A replacement for Shopify's discontinued Stocky app.",
+      "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "Inventory management",
+      "operatingSystem": "Web (Shopify admin)",
+      "image": "https://umer-78.github.io/stocksense/og.jpg",
+      "author": { "@type": "Person", "name": "Umer Hashmi", "url": "https://github.com/umer-78" },
+      "offers": [
+        { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD", "description": "Up to 100 variants" },
+        { "@type": "Offer", "name": "Growth", "price": "19", "priceCurrency": "USD", "description": "Up to 2,000 variants, monthly, 14-day free trial" },
+        { "@type": "Offer", "name": "Pro", "price": "49", "priceCurrency": "USD", "description": "Unlimited variants, monthly, 14-day free trial" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Is StockSense a drop-in Stocky replacement?", "acceptedAnswer": { "@type": "Answer", "text": "It covers the part most stores relied on: knowing what to reorder and when. You can import Stocky's variant and purchase-order CSV exports as reference history. It does not carry over suppliers and does not place orders, so it is a focused replacement rather than a full match." } },
+        { "@type": "Question", "name": "How does StockSense calculate the reorder point?", "acceptedAnswer": { "@type": "Answer", "text": "Lead-time demand is average daily sales multiplied by your supplier lead time. Safety stock is a percentage of that (20% by default). The reorder point is lead-time demand plus safety stock, rounded up. The suggested order brings stock back to your target days of cover plus safety stock, minus what is on hand." } },
+        { "@type": "Question", "name": "How much sales history does StockSense need?", "acceptedAnswer": { "@type": "Answer", "text": "It averages sales over a lookback window, 60 days by default and adjustable from 7 to 365 days. Forecasts based on fewer than 14 days of history are flagged as low confidence." } },
+        { "@type": "Question", "name": "Will StockSense change my inventory or place orders?", "acceptedAnswer": { "@type": "Answer", "text": "No. It only reads inventory and order history. The purchase-order builder exports a CSV for you to send to your supplier. Nothing is written back to Shopify and nothing is ordered automatically." } },
+        { "@type": "Question", "name": "Does StockSense work with multiple locations?", "acceptedAnswer": { "@type": "Answer", "text": "It forecasts one location at a time. You choose the location in settings and can switch whenever you like." } },
+        { "@type": "Question", "name": "How much does StockSense cost?", "acceptedAnswer": { "@type": "Answer", "text": "Free for up to 100 variants. Growth is $19 per month for up to 2,000 variants and Pro is $49 per month for unlimited variants. Paid plans include a 14-day free trial and are billed through Shopify, so you can cancel from your Shopify admin at any time." } },
+        { "@type": "Question", "name": "What happens to my data if I uninstall StockSense?", "acceptedAnswer": { "@type": "Answer", "text": "Your store's settings and any imported CSV files are deleted. StockSense does not copy your Shopify orders or products into its database and stores no customer data." } }
+      ]
+    }
+  ]
+}
+</script>
 <style>
   /* StockSense marketing site. Deliberately not the generic template look:
      a warm paper palette (no pure white, no purple/black, no neon), a serif
      display face (not Inter/Geist/Grotesk), flat fills (no gradients, no glass),
-     and no decorative orbs, dot grids, sparkles or fake testimonials. */
+     and no decorative orbs, dot grids, sparkles or fake testimonials.
+     Fonts are self-hosted latin subsets (SIL OFL, see fonts/) so the page makes
+     no third-party requests. */
+  @font-face { font-family: "Fraunces"; font-style: normal; font-weight: 600 700; font-display: swap; src: url(fonts/fraunces-latin.woff2) format("woff2"); }
+  @font-face { font-family: "Newsreader"; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/newsreader-italic-latin.woff2) format("woff2"); }
   :root {
     --paper: #f5f1e8;
     --paper-2: #efe9db;
     --card: #fbf9f3;
     --ink: #1d2a21;
     --ink-soft: #3f4a40;
-    --muted: #6d6f63;
+    --muted: #616357;
     --line: #d9d2c0;
     --line-strong: #c3bba5;
     --accent: #0f5c43;
@@ -59,7 +118,7 @@
     }
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   body {
     margin: 0; background: var(--paper); color: var(--ink);
@@ -67,11 +126,14 @@
     text-rendering: optimizeLegibility;
   }
   .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 480px) { .wrap { padding: 0 16px; } }
   a { color: inherit; }
   h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.08; letter-spacing: -0.01em; }
   h2 { font-size: clamp(27px, 3.6vw, 38px); margin: 0 0 14px; }
   p { margin: 0 0 16px; }
   .lead { color: var(--ink-soft); }
+  .skip { position: absolute; left: -9999px; top: 8px; }
+  .skip:focus { left: 8px; z-index: 50; background: var(--card); padding: 8px 12px; border-radius: 6px; }
 
   /* top bar */
   header.top { border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--paper) 88%, transparent); position: sticky; top: 0; z-index: 20; backdrop-filter: blur(6px); }
@@ -100,7 +162,7 @@
   .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
   .note { font-size: 14px; color: var(--muted); margin-top: 14px; }
 
-  /* the worked-example card: this is the real forecast breakdown the app shows */
+  /* the worked-example card: the real forecast breakdown the app computes */
   .ex { background: var(--card); border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 0 var(--line); }
   .ex-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 15px 18px; border-bottom: 1px solid var(--line); }
   .ex-head b { font-family: var(--serif); font-size: 17px; }
@@ -111,7 +173,7 @@
   .row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
   .row:last-child { border-bottom: 0; }
   .row .k { color: var(--ink-soft); }
-  .row .v { font: 600 14.5px/1.3 var(--mono); text-align: right; }
+  .row .v { font: 600 14.5px/1.3 var(--mono); text-align: right; white-space: nowrap; }
   .row .why { color: var(--muted); font-size: 12.5px; display: block; margin-top: 2px; }
   .row.key .v { color: var(--accent); font-size: 16px; }
   .ex-foot { padding: 12px 18px; background: var(--paper-2); border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-soft); }
@@ -127,6 +189,7 @@
   .step .n { font-family: var(--serif); font-size: 30px; color: var(--accent); font-weight: 600; }
   .step h3 { font-size: 20px; margin: 2px 0 6px; }
   .step p { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
+  @media (max-width: 480px) { .step { grid-template-columns: 34px 1fr; gap: 12px; padding: 18px 16px; } }
 
   /* honesty columns */
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 30px; }
@@ -155,6 +218,15 @@
     .ex-head, .row { flex-wrap: wrap; }
   }
 
+  /* guides */
+  .guides { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+  @media (max-width: 760px) { .guides { grid-template-columns: 1fr; } }
+  .guide { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; text-decoration: none; }
+  .guide:hover { border-color: var(--accent); }
+  .guide h3 { font-size: 20px; margin: 0 0 8px; }
+  .guide p { margin: 0 0 10px; color: var(--ink-soft); font-size: 15.5px; }
+  .guide .go { font: 600 14px/1 var(--sans); color: var(--accent); }
+
   .faq { margin-top: 24px; }
   details { border-top: 1px solid var(--line); padding: 16px 0; }
   details summary { font-family: var(--serif); font-size: 18px; cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
@@ -162,6 +234,7 @@
   details summary::after { content: "+"; color: var(--accent); font-family: var(--sans); }
   details[open] summary::after { content: "–"; }
   details p { margin: 12px 0 0; color: var(--ink-soft); font-size: 15.5px; }
+  details code { font: 500 14px/1.4 var(--mono); }
 
   footer { padding: 40px 0 56px; }
   .foot { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: center; }
@@ -171,22 +244,24 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 <header class="top">
   <div class="wrap bar">
-    <a class="brand" href="#top">
+    <a class="brand" href="./" aria-label="StockSense home">
       <span class="mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 21h3v-7H9zM14.5 21h3V8h-3zM20 21h3v-10h-3z" fill="#f3efe4"/></svg></span>
       StockSense
     </a>
-    <nav class="nav">
+    <nav class="nav" aria-label="Main">
       <a href="#how">How it works</a>
-      <a href="#honesty">What it does</a>
       <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="stocky-replacement.html">Stocky guide</a>
       <a class="btn solid" href="mailto:umerhashmi987@gmail.com?subject=StockSense%20early%20access">Get early access</a>
     </nav>
   </div>
 </header>
 
-<a id="top"></a>
+<main id="main">
 <div class="hero">
   <div class="wrap hero-grid">
     <div>
@@ -205,12 +280,13 @@
         <span class="pill crit">Reorder now</span>
       </div>
       <div class="ex-body">
-        <div class="row"><span class="k">Average daily sales<span class="why">42 units over the last 60 days, weighted to recent weeks</span></span><span class="v">0.70 / day</span></div>
+        <div class="row"><span class="k">Average daily sales<span class="why">42 units sold over the last 60 days</span></span><span class="v">0.70 / day</span></div>
         <div class="row"><span class="k">On hand today<span class="why">current inventory at this location</span></span><span class="v">6</span></div>
         <div class="row"><span class="k">Days to stockout<span class="why">6 on hand divided by 0.70 per day</span></span><span class="v">8.6 days</span></div>
         <div class="row"><span class="k">Lead-time demand<span class="why">0.70 / day over a 14-day supplier lead time</span></span><span class="v">9.8</span></div>
-        <div class="row"><span class="k">Safety stock<span class="why">20% buffer on lead-time demand</span></span><span class="v">2</span></div>
-        <div class="row key"><span class="k">Suggested order<span class="why">reorder point reached, bring cover back to 30 days</span></span><span class="v">24 units</span></div>
+        <div class="row"><span class="k">Safety stock<span class="why">20% buffer on lead-time demand, rounded up</span></span><span class="v">2</span></div>
+        <div class="row"><span class="k">Reorder point<span class="why">9.8 + 2, rounded up. 6 on hand is below it</span></span><span class="v">12</span></div>
+        <div class="row key"><span class="k">Suggested order<span class="why">30 days of cover (21) + safety stock (2), minus 6 on hand</span></span><span class="v">17 units</span></div>
       </div>
       <div class="ex-foot">Every value on this card is derived from your data. Nothing is a black box, and thin-data forecasts are flagged honestly.</div>
     </div>
@@ -223,8 +299,8 @@
     <h2>From sales history to a purchase order</h2>
     <p class="section-lead">Three reads of the Shopify Admin API, no writes, one location at a time.</p>
     <div class="steps">
-      <div class="step"><div class="n">1</div><div><h3>It reads your real sales</h3><p>StockSense pulls each variant's recent order history from Shopify and computes a sales velocity in units per day, weighted toward recent weeks so a slow month does not hide a fast one.</p></div></div>
-      <div class="step"><div class="n">2</div><div><h3>It projects the stockout and the reorder</h3><p>From on-hand inventory it works out days-to-stockout, then the reorder point and order quantity from your supplier lead time, safety-stock buffer and target cover. Each figure is shown with the arithmetic behind it.</p></div></div>
+      <div class="step"><div class="n">1</div><div><h3>It reads your real sales</h3><p>StockSense pulls each variant's order history from Shopify and works out its sales velocity: units sold divided by the calendar days in your lookback window (60 days by default), so days with no sales count as zero rather than being skipped.</p></div></div>
+      <div class="step"><div class="n">2</div><div><h3>It projects the stockout and the reorder</h3><p>From on-hand inventory it works out days to stockout, then the reorder point and order quantity from your supplier lead time, safety-stock buffer and target days of cover. Each figure is shown with the arithmetic behind it. On Growth and Pro, a day-of-week pattern is applied when there is enough history to trust it.</p></div></div>
       <div class="step"><div class="n">3</div><div><h3>You adjust and export a purchase order</h3><p>Change the lead time, safety stock or target days and every recommendation recomputes at once. The purchase-order builder lists what needs reordering and exports a CSV for your supplier. It never emails or places an order for you.</p></div></div>
     </div>
   </div>
@@ -239,7 +315,7 @@
       <div class="panel">
         <h3>What StockSense does</h3>
         <ul class="list">
-          <li>Sales velocity and days-to-stockout for every variant</li>
+          <li>Sales velocity and days to stockout for every variant</li>
           <li>Reorder point and suggested order quantity, each explained</li>
           <li>An urgency dashboard ranked critical, low, or healthy</li>
           <li>Live recompute when you change lead time or safety stock</li>
@@ -266,28 +342,47 @@
   <div class="wrap">
     <p class="kicker">Pricing</p>
     <h2>Priced by how many variants you track</h2>
-    <p class="section-lead">Billed through Shopify, cancel from your admin at any time. Paid plans include a 14-day trial.</p>
+    <p class="section-lead">Billed through Shopify, cancel from your admin at any time. Paid plans include a 14-day free trial.</p>
     <div class="price-scroll">
     <table class="price">
       <thead>
         <tr>
-          <th>What you get</th>
-          <th>Free<span class="amt">no charge</span></th>
-          <th>Growth<span class="amt">$19 / month</span></th>
-          <th>Pro<span class="amt">$49 / month</span></th>
+          <th scope="col">What you get</th>
+          <th scope="col">Free<span class="amt">no charge</span></th>
+          <th scope="col">Growth<span class="amt">$19 / month</span></th>
+          <th scope="col">Pro<span class="amt">$49 / month</span></th>
         </tr>
       </thead>
       <tbody>
-        <tr><th>Variants tracked</th><td>up to 100</td><td>up to 2,000</td><td>unlimited</td></tr>
-        <tr><th>Velocity and days-to-stockout</th><td>yes</td><td>yes</td><td>yes</td></tr>
-        <tr><th>Day-of-week seasonality</th><td>no</td><td>yes</td><td>yes</td></tr>
-        <tr><th>Purchase-order builder and CSV</th><td>no</td><td>yes</td><td>yes</td></tr>
-        <tr><th>Stocky CSV import</th><td>yes</td><td>yes</td><td>yes</td></tr>
-        <tr><th>Free trial</th><td>&mdash;</td><td>14 days</td><td>14 days</td></tr>
+        <tr><th scope="row">Variants tracked</th><td>up to 100</td><td>up to 2,000</td><td>unlimited</td></tr>
+        <tr><th scope="row">Velocity and days to stockout</th><td>yes</td><td>yes</td><td>yes</td></tr>
+        <tr><th scope="row">Day-of-week seasonality</th><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><th scope="row">Purchase-order builder and CSV</th><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><th scope="row">Stocky CSV import</th><td>yes</td><td>yes</td><td>yes</td></tr>
+        <tr><th scope="row">Free trial</th><td>&mdash;</td><td>14 days</td><td>14 days</td></tr>
       </tbody>
     </table>
     </div>
-    <p class="price-note">Limits are enforced on the server, so the number you pay for is the number you get. Prices are set in the app's billing configuration.</p>
+    <p class="price-note">Limits are enforced on the server, so the number you pay for is the number you get. Prices are in US dollars.</p>
+  </div>
+</section>
+
+<section id="guides">
+  <div class="wrap">
+    <p class="kicker">Guides</p>
+    <h2>Plain answers for Shopify inventory planning</h2>
+    <div class="guides">
+      <a class="guide" href="stocky-replacement.html">
+        <h3>Replacing Stocky: a step-by-step guide</h3>
+        <p>What to export from Stocky, what each of its jobs moves to, and how to get reorder suggestions running again.</p>
+        <span class="go">Read the guide &rarr;</span>
+      </a>
+      <a class="guide" href="reorder-point-calculator.html">
+        <h3>Reorder point calculator</h3>
+        <p>Work out days to stockout, safety stock, reorder point and how much to order. Free, in your browser, with the formulas explained.</p>
+        <span class="go">Open the calculator &rarr;</span>
+      </a>
+    </div>
   </div>
 </section>
 
@@ -296,22 +391,32 @@
     <p class="kicker">Questions</p>
     <h2>Before you install</h2>
     <div class="faq">
-      <details><summary>Is this a drop-in Stocky replacement?</summary><p>It covers the part most stores relied on: knowing what to reorder and when. You can import Stocky's variant and purchase-order CSV exports as reference history. It does not carry over suppliers, and it does not place orders, so it is a focused replacement rather than a full match.</p></details>
-      <details><summary>Will it change my inventory or place orders?</summary><p>No. StockSense only reads your inventory and order history. The purchase-order builder exports a CSV for you to send to your supplier. Nothing is written back to Shopify and nothing is ordered automatically.</p></details>
+      <details><summary>Is this a drop-in Stocky replacement?</summary><p>It covers the part most stores relied on: knowing what to reorder and when. You can import Stocky's variant and purchase-order CSV exports as reference history. It does not carry over suppliers, and it does not place orders, so it is a focused replacement rather than a full match. The <a href="stocky-replacement.html">Stocky replacement guide</a> walks through the switch.</p></details>
+      <details><summary>How does it calculate the reorder point?</summary><p>Lead-time demand is average daily sales times your supplier lead time. Safety stock is a percentage of that (20% by default). The reorder point is lead-time demand plus safety stock, rounded up. The suggested order brings stock back to your target days of cover plus safety stock, minus what is on hand. Try it with your own numbers in the <a href="reorder-point-calculator.html">reorder point calculator</a>.</p></details>
+      <details><summary>How much sales history does it need?</summary><p>It averages sales over a lookback window: 60 days by default, adjustable from 7 to 365 days. Forecasts based on fewer than 14 days of history are flagged as low confidence. Day-of-week seasonality only kicks in when there are at least 14 days of sales covering every day of the week.</p></details>
       <details><summary>How does it handle a product with very little sales history?</summary><p>It still shows a figure, but marks the forecast as low confidence rather than presenting a thin-data guess as if it were certain. The math on the card shows exactly what the estimate is based on.</p></details>
+      <details><summary>Will it change my inventory or place orders?</summary><p>No. StockSense only reads your inventory and order history. The purchase-order builder exports a CSV for you to send to your supplier. Nothing is written back to Shopify and nothing is ordered automatically.</p></details>
+      <details><summary>Does it work with multiple locations?</summary><p>It forecasts one location at a time. You pick the location in settings and can switch whenever you like.</p></details>
+      <details><summary>What do I need to set up after installing?</summary><p>Nothing, to start. The defaults are a 14-day supplier lead time, 20% safety stock, 30 days of target cover and a 60-day sales lookback, so the dashboard works straight away. Change any of them in settings and every recommendation recomputes.</p></details>
+      <details><summary>How does billing work, and can I cancel?</summary><p>The Free plan covers up to 100 variants with no charge. Growth ($19/month, up to 2,000 variants) and Pro ($49/month, unlimited) include a 14-day free trial. All charges go through your Shopify bill, and you cancel from your Shopify admin like any other app.</p></details>
+      <details><summary>What happens to my data if I uninstall?</summary><p>Your store's settings and any imported CSV files are deleted. StockSense does not copy your Shopify orders or products into its database; it fetches them from Shopify when needed. See the <a href="privacy-policy.html">privacy policy</a>.</p></details>
       <details><summary>What about customer data and GDPR?</summary><p>The app stores no customer data. It implements Shopify's three mandated privacy webhooks for data requests, customer redaction and shop redaction.</p></details>
-      <details><summary>Can I self-host it?</summary><p>Yes. StockSense is open source. The repository includes a Dockerfile and deploy configuration for common hosts, and a deploy guide. See the GitHub link below.</p></details>
+      <details><summary>When can I install it?</summary><p>StockSense is in early access while it goes through Shopify App Store review. <a href="mailto:umerhashmi987@gmail.com?subject=StockSense%20early%20access">Email for early access</a> and you will hear as soon as it can be installed on your store.</p></details>
+      <details><summary>Can I self-host it?</summary><p>Yes. StockSense is open source. The repository includes a Dockerfile, deploy configuration for common hosts, and a deploy guide. See <a href="https://github.com/umer-78/stocksense">the source on GitHub</a>.</p></details>
     </div>
   </div>
 </section>
+</main>
 
 <footer>
   <div class="wrap foot">
+    <a href="stocky-replacement.html">Stocky replacement guide</a>
+    <a href="reorder-point-calculator.html">Reorder point calculator</a>
     <a href="https://github.com/umer-78/stocksense">Source on GitHub</a>
     <a href="terms.html">Terms of Service</a>
     <a href="privacy-policy.html">Privacy Policy</a>
-    <a href="https://umer-78.github.io/">More projects</a>
-    <span class="sp">Built by Umer Hashmi</span>
+    <a href="mailto:umerhashmi987@gmail.com">Contact</a>
+    <span class="sp">Built by <a href="https://github.com/umer-78">Umer Hashmi</a></span>
   </div>
 </footer>
 </body>

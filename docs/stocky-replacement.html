@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en" data-site="stocksense">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stocky Replacement Guide: Moving Off Shopify Stocky | StockSense</title>
+<meta name="description" content="Stocky was discontinued in August 2026. What to keep, where each of its jobs moves to, and how to get Shopify reorder suggestions running again.">
+<meta name="keywords" content="Stocky replacement, Stocky alternative, Shopify Stocky discontinued, Stocky shutting down, migrate from Stocky, Stocky export, Shopify reorder app">
+<link rel="canonical" href="https://umer-78.github.io/stocksense/stocky-replacement.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Umer Hashmi">
+<meta name="theme-color" content="#0f5c43">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="StockSense">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Stocky replacement guide: moving off Shopify Stocky">
+<meta property="og:description" content="What to keep from Stocky, where each of its jobs moves to, and how to get reorder suggestions running again.">
+<meta property="og:url" content="https://umer-78.github.io/stocksense/stocky-replacement.html">
+<meta property="og:image" content="https://umer-78.github.io/stocksense/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Stocky replacement guide: moving off Shopify Stocky">
+<meta name="twitter:description" content="What to keep from Stocky, where each of its jobs moves to, and how to get reorder suggestions running again.">
+<meta name="twitter:image" content="https://umer-78.github.io/stocksense/og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f5c43'/%3E%3Cpath d='M9 20h3v-6H9zM14.5 20h3V9h-3zM20 20h3v-9h-3z' fill='%23f3efe4'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Stocky replacement guide: moving off Shopify Stocky",
+      "description": "What to keep from Stocky, where each of its jobs moves to, and how to get Shopify reorder suggestions running again.",
+      "image": "https://umer-78.github.io/stocksense/og.jpg",
+      "datePublished": "2026-10-15",
+      "dateModified": "2026-10-15",
+      "author": { "@type": "Person", "name": "Umer Hashmi", "url": "https://github.com/umer-78" },
+      "publisher": { "@type": "Organization", "name": "StockSense", "url": "https://umer-78.github.io/stocksense/" },
+      "mainEntityOfPage": "https://umer-78.github.io/stocksense/stocky-replacement.html"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "StockSense", "item": "https://umer-78.github.io/stocksense/" },
+        { "@type": "ListItem", "position": 2, "name": "Stocky replacement guide", "item": "https://umer-78.github.io/stocksense/stocky-replacement.html" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Can I still export my data from Stocky?", "acceptedAnswer": { "@type": "Answer", "text": "Stocky was discontinued in August 2026, so new exports may no longer be possible. If you saved the Stocky - Variants.csv and Stocky - Purchase Orders.csv exports before the shutdown, keep them: they are your purchase-order history and a record of your supplier lead times." } },
+        { "@type": "Question", "name": "Do I need my Stocky data to start forecasting again?", "acceptedAnswer": { "@type": "Answer", "text": "No. StockSense forecasts from your Shopify order history and current inventory, which Shopify still holds. The Stocky exports are useful reference history, not a requirement." } },
+        { "@type": "Question", "name": "Does StockSense manage suppliers like Stocky did?", "acceptedAnswer": { "@type": "Answer", "text": "No. StockSense focuses on forecasting and reorder quantities. Its purchase-order builder exports a CSV you send to your supplier yourself. Keep supplier details in a spreadsheet or a dedicated inventory-management app." } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  @font-face { font-family: "Fraunces"; font-style: normal; font-weight: 600 700; font-display: swap; src: url(fonts/fraunces-latin.woff2) format("woff2"); }
+  :root {
+    --paper: #f5f1e8; --paper-2: #efe9db; --card: #fbf9f3; --ink: #1d2a21; --ink-soft: #3f4a40;
+    --muted: #616357; --line: #d9d2c0; --line-strong: #c3bba5; --accent: #0f5c43; --accent-ink: #f3efe4; --amber: #a2521a;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14160f; --paper-2: #191b12; --card: #1e2017; --ink: #eae6d6; --ink-soft: #c3c1b1;
+      --muted: #938f7e; --line: #2f3225; --line-strong: #3d402f; --accent: #5bbd92; --accent-ink: #0c130d; --amber: #d78a4a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.7 var(--sans); -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 480px) { .wrap { padding: 0 16px; } }
+  header.top { border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1080px; display: flex; align-items: center; gap: 18px; height: 64px; }
+  .brand { font-family: var(--serif); font-weight: 700; font-size: 20px; letter-spacing: -0.02em; display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); }
+  .brand .mark { width: 24px; height: 24px; border-radius: 6px; background: var(--accent); display: inline-grid; place-items: center; }
+  .brand .mark svg { width: 15px; height: 15px; }
+  .btn { display: inline-flex; align-items: center; font: 600 15px/1 var(--sans); text-decoration: none; padding: 10px 15px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); }
+  .bar .btn { margin-left: auto; }
+  .crumbs { font-size: 14px; color: var(--muted); margin: 28px 0 0; }
+  .crumbs a { color: var(--muted); }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.12; letter-spacing: -0.01em; }
+  h1 { font-size: clamp(32px, 5vw, 46px); margin: 14px 0 16px; }
+  h2 { font-size: clamp(24px, 3.2vw, 30px); margin: 44px 0 12px; }
+  h3 { font-size: 20px; margin: 28px 0 8px; }
+  p, li { color: var(--ink-soft); }
+  .lead { font-size: 19px; }
+  .meta { font-size: 14px; color: var(--muted); }
+  ol, ul { padding-left: 22px; }
+  li { margin: 6px 0; }
+  code { font: 500 0.88em/1.4 var(--mono); background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; margin: 24px 0; }
+  .box p:last-child { margin-bottom: 0; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 20px 0; }
+  table { width: 100%; min-width: 520px; border-collapse: collapse; background: var(--card); border: 1px solid var(--line-strong); font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  thead th { background: var(--paper-2); font-family: var(--serif); font-weight: 600; }
+  tbody th { font-weight: 600; color: var(--ink); }
+  td { color: var(--ink-soft); }
+  .cta { background: var(--card); border: 1px solid var(--line-strong); border-radius: 12px; padding: 24px; margin: 48px 0 8px; }
+  .cta h2 { margin-top: 0; }
+  footer { border-top: 1px solid var(--line); margin-top: 56px; padding: 28px 0 48px; }
+  .foot { display: flex; flex-wrap: wrap; gap: 12px 24px; font-size: 14.5px; }
+  .foot a { color: var(--ink-soft); text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="./" aria-label="StockSense home">
+      <span class="mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 21h3v-7H9zM14.5 21h3V8h-3zM20 21h3v-10h-3z" fill="#f3efe4"/></svg></span>
+      StockSense
+    </a>
+    <a class="btn" href="mailto:umerhashmi987@gmail.com?subject=StockSense%20early%20access">Get early access</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="./">StockSense</a> / Stocky replacement guide</nav>
+  <article>
+    <h1>Stocky replacement guide: moving off Shopify Stocky</h1>
+    <p class="meta">Updated October 2026 &middot; 6 minute read</p>
+    <p class="lead">Shopify discontinued Stocky in August 2026. For most stores the painful loss is not a screen or a report, it is the weekly answer to one question: <strong>what do I need to reorder, and how much?</strong> This guide covers what to keep, where each of Stocky's jobs goes now, and how to get reorder suggestions running again.</p>
+
+    <h2>1. Keep whatever Stocky data you still have</h2>
+    <p>If you exported your data before the shutdown, you likely have two CSV files:</p>
+    <ul>
+      <li><code>Stocky - Variants.csv</code>: on-hand, available, committed and incoming quantities per variant, plus cost and lead time where you had set them.</li>
+      <li><code>Stocky - Purchase Orders.csv</code>: your purchase-order history, with supplier, SKU, quantity ordered and received, cost and order date.</li>
+    </ul>
+    <p>Store both somewhere safe. The purchase-order file is the most valuable: it records how long each supplier actually took and how much you ordered, which is exactly what you need to set lead times in any replacement.</p>
+    <div class="box"><p><strong>No exports? You can still start.</strong> Forecasting runs on your Shopify order history and current inventory, and Shopify still holds both. Stocky's files are useful reference, not a requirement.</p></div>
+
+    <h2>2. Write down the settings you relied on</h2>
+    <p>Before you set anything up, note these per supplier (or per product, if they differ a lot):</p>
+    <ul>
+      <li><strong>Lead time</strong>: days from placing an order to stock being sellable.</li>
+      <li><strong>Safety buffer</strong>: how much extra you keep for slow deliveries or sales spikes.</li>
+      <li><strong>Cover</strong>: how many days of stock one order should last, which usually matches how often you reorder.</li>
+    </ul>
+
+    <h2>3. Decide where each of Stocky's jobs goes</h2>
+    <p>Stocky did several jobs. No single app has to replace all of them, and most stores only used one or two.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th scope="col">Job Stocky did</th><th scope="col">Where it can go now</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Forecasting and reorder suggestions</th><td>An inventory forecasting app such as StockSense, which shows days to stockout, reorder point and suggested quantity per variant.</td></tr>
+        <tr><th scope="row">Building purchase orders</th><td>StockSense's purchase-order builder exports a CSV you send to your supplier. Or a spreadsheet.</td></tr>
+        <tr><th scope="row">Supplier records</th><td>A spreadsheet, or a full inventory-management app if you have many suppliers.</td></tr>
+        <tr><th scope="row">Receiving, adjustments, transfers, stocktakes</th><td>Shopify admin's own inventory tools, or a full inventory-management app.</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>4. Set up forecasting again</h2>
+    <ol>
+      <li><strong>Install the app and pick a location.</strong> StockSense forecasts one location at a time; you can switch in settings.</li>
+      <li><strong>Enter the settings from step 2.</strong> Defaults are a 14-day lead time, 20% safety stock, 30 days of cover and a 60-day sales lookback, so it works before you change anything.</li>
+      <li><strong>Import your Stocky CSVs</strong> (optional). Both files are accepted and stored as reference history.</li>
+      <li><strong>Check the dashboard.</strong> Variants are ranked critical (will run out before a new order could arrive), low (within twice your lead time) or healthy.</li>
+    </ol>
+
+    <h2>5. Run a weekly reorder routine</h2>
+    <ol>
+      <li>Open the dashboard and start with the critical items.</li>
+      <li>Read the explanation on any number that surprises you. Each one shows the sales, lead time and buffer behind it.</li>
+      <li>Add what needs ordering to the purchase-order builder, adjust quantities, and export the CSV.</li>
+      <li>Send it to your supplier. Nothing is ordered automatically.</li>
+    </ol>
+    <p>Want to sanity-check the math first? Run your own numbers through the free <a href="reorder-point-calculator.html">reorder point calculator</a>. It uses the same formulas as the app.</p>
+
+    <h2>Stocky and StockSense compared</h2>
+    <div class="scroll">
+    <table>
+      <thead><tr><th scope="col">&nbsp;</th><th scope="col">Stocky</th><th scope="col">StockSense</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Status</th><td>Discontinued August 2026</td><td>Early access, in App Store review</td></tr>
+        <tr><th scope="row">Reorder suggestions</th><td>Yes</td><td>Yes, with the arithmetic shown for each number</td></tr>
+        <tr><th scope="row">Purchase orders</th><td>Created and tracked in app</td><td>Built in app, exported as CSV</td></tr>
+        <tr><th scope="row">Suppliers and receiving</th><td>Yes</td><td>No</td></tr>
+        <tr><th scope="row">Writes to your inventory</th><td>Yes</td><td>No, read-only</td></tr>
+        <tr><th scope="row">Imports Stocky exports</th><td>&mdash;</td><td>Yes</td></tr>
+        <tr><th scope="row">Price</th><td>Was free with POS Pro</td><td>Free up to 100 variants; $19 or $49 per month above that</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>Common questions</h2>
+    <h3>Can I still export my data from Stocky?</h3>
+    <p>Stocky was discontinued in August 2026, so new exports may no longer be possible. If you saved the exports before the shutdown, keep them.</p>
+    <h3>Do I need my Stocky data to start forecasting again?</h3>
+    <p>No. Forecasts come from your Shopify order history and current inventory.</p>
+    <h3>Does StockSense manage suppliers like Stocky did?</h3>
+    <p>No. It focuses on forecasting and reorder quantities, and exports purchase orders as CSV. Keep supplier details in a spreadsheet or a dedicated inventory-management app.</p>
+    <h3>Will it change my stock levels?</h3>
+    <p>No. StockSense only reads inventory and orders. It never writes to Shopify.</p>
+  </article>
+
+  <div class="cta">
+    <h2>Get reorder suggestions back</h2>
+    <p>StockSense is in early access while it completes Shopify App Store review. Email to get on the list and you will hear the moment it can be installed.</p>
+    <a class="btn" href="mailto:umerhashmi987@gmail.com?subject=StockSense%20early%20access">Get early access</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <a href="./">Home</a>
+    <a href="./#pricing">Pricing</a>
+    <a href="./#faq">FAQ</a>
+    <a href="reorder-point-calculator.html">Reorder point calculator</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Service</a>
+  </div>
+</footer>
+</body>
+</html>

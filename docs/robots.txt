@@ -1,0 +1,7 @@
+# Crawlers only read robots.txt at a host's root. On umer-78.github.io this
+# file sits under /stocksense/ and is ignored; it takes effect once a custom
+# domain is set (docs/CNAME), when it is served from the root.
+User-agent: *
+Allow: /
+
+Sitemap: https://umer-78.github.io/stocksense/sitemap.xml
