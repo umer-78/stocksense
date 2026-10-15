@@ -84,15 +84,19 @@ Stocky CSV parser, import limits, and the GDPR webhook handlers.
 
 ## Deployment
 
-See **[DEPLOY.md](DEPLOY.md)** — a copy-paste runbook for Render (free tier,
-dev-store testing only) and Fly.io (persistent storage, required before
-onboarding real merchants). Nothing in this repo is deployed yet.
+See **[DEPLOY.md](DEPLOY.md)** — a copy-paste runbook for Render + Supabase
+(free tier), the marketing site's custom domain and Google Search Console
+setup, and the free GitHub workflows (CodeQL, site checks).
 
 ## Marketing
 
-See **[marketing/](marketing/)** — App Store listing draft, outreach drafts
-(Shopify Community, Reddit, email, launch announcement), and the revenue math
-behind the $1,000/month target.
+- **Website:** [`docs/`](docs/) on GitHub Pages —
+  <https://umer-78.github.io/stocksense/>. Landing page, a Stocky replacement
+  guide, a free reorder point calculator, `sitemap.xml` and `robots.txt`.
+  Checked by `.github/workflows/site.yml` (broken links + Lighthouse).
+- **[marketing/](marketing/)** — App Store listing draft, outreach drafts
+  (Shopify Community, Reddit, email, launch announcement), and the revenue math
+  behind the $1,000/month target.
 
 ## Project status
 

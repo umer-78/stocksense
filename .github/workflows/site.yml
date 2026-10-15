@@ -1,0 +1,47 @@
+name: Site
+
+# Checks the marketing site in docs/ (served by GitHub Pages): no broken links,
+# and Lighthouse scores for speed, accessibility and SEO. Runs weekly too, to
+# catch external links that rot.
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", ".github/workflows/site.yml", ".github/lighthouserc.json"]
+  pull_request:
+    paths: ["docs/**", ".github/workflows/site.yml", ".github/lighthouserc.json"]
+  schedule:
+    - cron: "41 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      # Absolute links to the live site are checked against the files in this
+      # commit, so a new page doesn't fail before it is deployed.
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          fail: true
+          args: >-
+            --no-progress
+            --remap 'https://umer-78\.github\.io/stocksense/$ file://${{ github.workspace }}/docs/index.html'
+            --remap 'https://umer-78\.github\.io/stocksense/(.+) file://${{ github.workspace }}/docs/$1'
+            --exclude '^mailto:'
+            'docs/**/*.html'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: .github/lighthouserc.json
+          uploadArtifacts: true
