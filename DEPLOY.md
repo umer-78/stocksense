@@ -228,7 +228,7 @@ When you add a page, add it to `docs/sitemap.xml` and bump `lastmod`.
 | `codeql.yml` | GitHub code scanning for JS/TS and workflows; results in **Security → Code scanning** (free on public repos) |
 | `site.yml` | Broken-link check and Lighthouse (speed, accessibility, SEO) for `docs/`; weekly link-rot check |
 | `keepalive.yml` | Pings `/healthz?db=1`, retrying through Render cold starts |
-| `dependabot.yml` | Weekly dependency PRs; skips React/Prisma majors the Shopify packages can't take yet |
+| `dependabot.yml` | Weekly dependency PRs; skips React, Prisma and Vite majors that Polaris, the Shopify session storage and Remix 2 can't take yet |
 
 GitHub Actions minutes are free and unlimited for public repositories.
 
