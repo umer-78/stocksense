@@ -124,9 +124,14 @@ function anchoredVelocity(
   let startDay = lookback
     ? endDay - (lookback - 1) * DAY_MS
     : Math.min(endDay, ...entries.map((e) => e.day));
+  // Days before the product existed are not zero-sales days, so skip them.
+  // A recorded sale proves the item was selling, though: history imported
+  // when migrating stores predates the product's creation in Shopify.
   const since = availableSince ? parseDate(availableSince) : null;
   if (since) {
-    startDay = Math.min(endDay, Math.max(startDay, startOfUtcDay(since).getTime()));
+    const firstSale = entries.length > 0 ? Math.min(...entries.map((e) => e.day)) : Infinity;
+    const sellingSince = Math.min(startOfUtcDay(since).getTime(), firstSale);
+    startDay = Math.min(endDay, Math.max(startDay, sellingSince));
   }
 
   const byDay = new Map<number, number>();

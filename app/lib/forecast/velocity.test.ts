@@ -166,6 +166,29 @@ describe("computeVelocity anchored to a window end (today)", () => {
     expect(result.firstDate).toBe("2026-09-21");
   });
 
+  it("keeps sales recorded before the creation date (imported history)", () => {
+    const history: SalesRecord[] = [
+      { date: "2026-09-01", quantity: 15 },
+      { date: "2026-09-25", quantity: 15 },
+    ];
+    const result = computeVelocity(history, 60, { end: "2026-09-30", start: "2026-09-21" });
+    expect(result.firstDate).toBe("2026-09-01");
+    expect(result.daysCovered).toBe(30);
+    expect(result.totalUnits).toBe(30);
+    expect(result.velocity).toBe(1);
+  });
+
+  it("still caps imported history at the lookback window", () => {
+    const history: SalesRecord[] = [
+      { date: "2026-06-01", quantity: 50 },
+      { date: "2026-09-25", quantity: 10 },
+    ];
+    const result = computeVelocity(history, 30, { end: "2026-09-30", start: "2026-09-21" });
+    expect(result.firstDate).toBe("2026-09-01");
+    expect(result.daysCovered).toBe(30);
+    expect(result.totalUnits).toBe(10);
+  });
+
   it("drops sales after the window end and returns zero with no sales", () => {
     const result = computeVelocity([{ date: "2026-10-05", quantity: 9 }], 7, { end: "2026-10-01" });
     expect(result.totalUnits).toBe(0);
