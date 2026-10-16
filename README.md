@@ -11,30 +11,37 @@ English.
 
 ## Features
 
-- **Explainable forecasts.** Every recommendation comes with the numbers behind
-  it: average daily sales, lead-time demand, safety stock, reorder point,
-  target level and suggested order quantity (`app/lib/forecast/forecast.ts`).
-  No black-box predictions — seasonality is simple day-of-week index math.
-- **Urgency dashboard.** Every variant ranked by stockout risk (critical / low /
-  ok), with filters for location, status and SKU/product search.
-- **Live recompute.** Edit supplier lead time, safety stock % or target
-  coverage days on the variant page and the forecast updates instantly.
+- **Forecasting model, built from scratch.** For each variant the app fits a
+  simple average, a recent 4-week average, exponential smoothing, a damped
+  trend model, a Holt-Winters weekly-pattern model (paid plans) and a Croston
+  model for slow sellers, back-tests them on the last 4 weeks of sales, and
+  uses the most accurate (`app/lib/forecast/models.ts`, `backtest.ts`). On a
+  seeded simulated catalog this halves 14-day demand error versus a plain
+  average (`benchmark.test.ts`). No external AI service; it runs in the app.
+- **Explainable numbers.** Every recommendation comes with the figures behind
+  it: sales, chosen method and its tested accuracy, lead-time demand, safety
+  stock, reorder point and order quantity (`app/lib/forecast/forecast.ts`).
+- **Urgency dashboard.** Variants ranked by stockout risk, with a summary of
+  what to reorder and its value at cost, filters for location (one or all
+  combined), status and search.
+- **Variant page.** Sales chart with the forecast, stock by location, and
+  per-product lead time / safety stock / cover overrides that recompute live.
+- **Safety stock two ways.** A percentage of lead-time demand, or sized from
+  measured forecast error for a chosen service level.
 - **Purchase order builder.** Variants that need reordering, adjustable
-  quantities, and CSV export (download or copy). CSV only — no automatic PO
-  emailing.
-- **Stocky CSV import.** Best-effort parser for Stocky's two export files
-  (`Stocky - Variants.csv` and `Stocky - Purchase Orders.csv`), with a preview
-  before confirming. Imported data is stored as reference history; suppliers
-  are not carried over.
-- **Per-location forecasting.** Choose the inventory location to forecast
-  against in Settings (one location at a time).
-- **Plans and billing.** Free (100 SKUs) / Growth $19/mo (2,000 SKUs) / Pro
-  $49/mo (unlimited), billed through Shopify's Billing API with 14-day trials
-  on paid plans. Plan limits are enforced server-side
-  (`app/lib/billing/plans.ts`).
-- **GDPR compliance.** All three mandated webhooks implemented
-  (`customers/data_request`, `customers/redact`, `shop/redact`). The app stores
-  no customer data.
+  quantities, CSV export (download or copy). Stock already on order is
+  subtracted. CSV only — no automatic PO emailing.
+- **Stocky CSV import.** Parser for `Stocky - Variants.csv` and
+  `Stocky - Purchase Orders.csv`; lead times from the variants export can be
+  applied to matching SKUs.
+- **Shopify data via bulk operations.** Catalog and orders are read with bulk
+  exports (no query-cost limits), cached as a gzipped snapshot in Postgres and
+  refreshed every 6 hours or on demand (`app/lib/shopify/snapshot.server.ts`).
+- **Plans and billing.** Free (100 variants) / Growth $19/mo (2,000) / Pro
+  $49/mo (unlimited), billed through Shopify with 14-day trials. Limits are
+  enforced server-side (`app/lib/billing/plans.ts`).
+- **Privacy.** All three mandated GDPR webhooks implemented; uninstall deletes
+  the shop's data. No customer data or order details are stored.
 
 ## Architecture
 
@@ -46,11 +53,11 @@ English.
 - **Prisma + Postgres** (Supabase free tier) — sessions, per-shop settings, Stocky imports, privacy
   event log (`prisma/schema.prisma`)
 - **Forecast engine** (`app/lib/forecast/`) — pure TypeScript, no framework
-  dependencies: velocity, stockout, reorder, seasonality, and the
-  `generateForecast` orchestrator that produces the explanations
-- **Shopify data layer** (`app/lib/shopify/`) — paginated Admin GraphQL
-  queries, an adapter that converts raw responses into domain types, and an
-  in-memory TTL cache for snapshots
+  dependencies: velocity, models, back-test selection, stockout, reorder,
+  and the `generateForecast` orchestrator that produces the explanations
+- **Shopify data layer** (`app/lib/shopify/`) — bulk-operation exports,
+  streaming JSONL parsers, a sync state machine persisted in Postgres, and an
+  adapter from the stored snapshot to domain types
 
 The forecast engine never sees Shopify types — it only receives
 `SalesRecord[]` and plain numbers, which is why it's fully unit-testable.
@@ -72,15 +79,17 @@ of them during `shopify app dev`).
 ## Tests and checks
 
 ```shell
-npm test             # vitest — 90 tests across 11 files
+npm test             # vitest
 npm run typecheck    # tsc --noEmit
 npm run lint         # eslint
 npm run build        # remix vite:build
 ```
 
-Tests cover the forecast engine (velocity, stockout, reorder, seasonality,
-full forecast), plan enforcement, dashboard logic, the Shopify adapter, the
-Stocky CSV parser, import limits, and the GDPR webhook handlers.
+Tests cover the forecast engine (velocity, every model, back-test selection,
+an accuracy benchmark on a simulated catalog, full forecasts), the bulk-export
+parsers and sync state machine, plan enforcement, dashboard logic, the Stocky
+parser and lead-time matching, PO CSV export, import limits, and the
+uninstall/GDPR webhooks.
 
 ## Deployment
 

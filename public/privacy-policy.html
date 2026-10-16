@@ -21,7 +21,7 @@
   </head>
   <body>
     <h1>StockSense Privacy Policy</h1>
-    <p class="muted">Last updated: October 2026</p>
+    <p class="muted">Last updated: October 16, 2026</p>
 
     <p>
       StockSense is an inventory forecasting app for Shopify merchants. This
@@ -48,19 +48,28 @@
 
     <h2>Data storage</h2>
     <p>
-      We store only the minimum needed to run the app: your store's forecasting
-      settings (lead time, safety stock, target coverage, lookback window,
-      selected location) and any CSV files you import. Shopify order and
-      product data is fetched from the Shopify Admin API on demand and is not
-      copied into our database.
+      We store only what the app needs to run:
+    </p>
+    <ul>
+      <li>Your forecasting settings (lead time, safety stock, target coverage,
+        sales history window, location) and any per-product overrides.</li>
+      <li>An inventory snapshot, refreshed every few hours: product and variant
+        titles, SKUs, prices and unit costs, stock quantities per location,
+        and the number of units of each variant sold per day. It holds no
+        order details, no customer information and no payment data.</li>
+      <li>Any Stocky CSV files you import.</li>
+    </ul>
+    <p>
+      Orders are read through Shopify's bulk export only to count units sold
+      per day; individual orders are not stored.
     </p>
 
     <h2>Data retention and deletion</h2>
     <p>
       When you uninstall StockSense, or when Shopify sends a
-      <em>shop/redact</em> request, we delete the store's settings and imported
-      files. You can request a copy of your data at any time using the contact
-      details below.
+      <em>shop/redact</em> request, we delete the store's settings, overrides,
+      inventory snapshot and imported files. You can request a copy of your
+      data at any time using the contact details below.
     </p>
 
     <h2>Contact</h2>

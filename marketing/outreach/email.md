@@ -25,7 +25,7 @@ Quick honest summary of what it does:
 - Exports purchase orders as CSV
 
 And what it doesn't do yet: no automatic PO emailing, no supplier management,
-one location at a time. I'd rather you know the limits up front.
+no dates on incoming stock. I'd rather you know the limits up front.
 
 It's free up to 100 SKUs, no card required. If you want, I can walk you through
 it on your store and tell you straight whether it fits your setup or whether

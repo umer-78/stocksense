@@ -35,6 +35,11 @@ boot. Fly.io (step 9) is optional now — only if you outgrow the free tiers.
    read_inventory, read_products, read_orders, read_locations
    ```
 
+   With `read_orders`, Shopify shares the last 60 days of orders, and the app
+   caps its sales window there (the settings page says so). To forecast from
+   up to 365 days, also request `read_all_orders`, which Shopify must approve
+   for the app; the app uses the longer window automatically once granted.
+
 3. **App setup → App details → URLs:**
    - **App URL:** `https://<SHOPIFY_APP_URL>` (the Render URL from step 4)
    - **Allowed redirection URL(s):** `https://<SHOPIFY_APP_URL>/auth/callback`
@@ -240,7 +245,7 @@ If **Settings → Code security → CodeQL** is on "Default setup", switch it of
 ## Verification checklist (run before each deploy)
 
 ```bash
-npm test          # 93 tests pass
+npm test          # all tests pass
 npm run typecheck # clean
 npm run lint      # clean
 npm run build     # succeeds

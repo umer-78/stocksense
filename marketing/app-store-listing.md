@@ -28,9 +28,9 @@ Reorder before you run out — every forecast shows its math.
 
 Stocky, Shopify's native inventory app, shut down on August 31, 2026. StockSense helps you reorder before you run out — without black-box forecasts.
 
-**Know when you'll run out.** StockSense reads your real sales history from Shopify, computes a sales velocity (units/day) for every variant, and projects days-to-stockout from current on-hand inventory — so you see what's critical today, not next week.
+**Know when you'll run out.** StockSense reads your real sales history from Shopify and tests several forecasting methods on each variant's own sales (average, smoothing, trend, weekly pattern, slow-seller), then uses the one that predicted best to project days-to-stockout from sellable stock — so you see what's critical today, not next week.
 
-**Every recommendation shows its math.** No 'trust us' forecasts. Each variant gets the plain-English breakdown: average daily sales, lead-time demand, safety stock, reorder point, suggested order quantity — every number explained in a sentence. Thin-data forecasts are flagged honestly.
+**Every recommendation shows its math.** No 'trust us' forecasts. Each variant gets the plain-English breakdown: sales, the forecast method chosen and how accurate it was in testing, lead-time demand, safety stock, reorder point, suggested order quantity — every number explained in a sentence. Thin-data forecasts are flagged honestly.
 
 **Adjust assumptions, recompute live.** Edit supplier lead time, safety stock %, or target coverage days and the recommendation updates instantly. Save your defaults once and they drive the whole dashboard.
 
@@ -38,21 +38,21 @@ Stocky, Shopify's native inventory app, shut down on August 31, 2026. StockSense
 
 **Bring your Stocky history.** Import Stocky CSV exports (variants and PO history) as a reference with a preview before you confirm. Suppliers are not carried over.
 
-**Works per location, reads only.** Forecast one inventory location at a time — the app only reads your inventory, never writes.
+**All locations or one, reads only.** Forecast all locations combined or a single location — the app only reads your inventory, never writes.
 
 **Plans for every size of store:**
 - **Free** — up to 100 SKUs: forecasts, urgency dashboard, Stocky import.
-- **Growth ($19/mo)** — up to 2,000 SKUs, adds seasonality and the purchase order builder. 14-day free trial.
+- **Growth ($19/mo)** — up to 2,000 SKUs, adds the weekly-pattern forecast model and the purchase order builder. 14-day free trial.
 - **Pro ($49/mo)** — unlimited SKUs, everything in Growth. 14-day free trial.
 
-**What StockSense does not do (yet):** it does not place or email orders (CSV export only); it does not manage suppliers or receiving; it forecasts one location at a time; and it only reads your inventory, never writes.
+**What StockSense does not do (yet):** it does not place or email orders (CSV export only); it does not manage suppliers or receiving; it counts stock on order but does not know when it will arrive; and it only reads your inventory, never writes.
 
 **Privacy by design.** Stores no customer data and implements Shopify's GDPR webhooks for data requests, customer redaction, and shop redaction.
 
 ---
 ## 4. Pricing table (matches `app/lib/billing/plans.ts` exactly)
 
-| Plan | Price | SKU limit | Seasonality | PO builder | Stocky import | Trial |
+| Plan | Price | SKU limit | Weekly-pattern model | PO builder | Stocky import | Trial |
 | --- | --- | --- | --- | --- | --- | --- |
 | Free | $0 | 100 | No | No | Yes | — |
 | Growth | $19/mo | 2,000 | Yes | Yes | Yes | 14 days |
@@ -107,7 +107,7 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 **Billing flow.**
 - Paid plans (Growth $19/mo, Pro $49/mo) use Shopify's Billing API with a 14-day trial on both.
 - Test vs. real charges is env-driven (`isTestBilling()` in `app/lib/billing/plans.ts`): real charges in production, simulated charges on development stores, so reviewers testing on dev stores see simulated charges.
-- Plan gating is enforced server-side on every route (`app/lib/billing/plans.ts`): SKU caps, seasonality, PO builder, and Stocky import are all feature-flagged per plan.
+- Plan gating is enforced server-side on every route (`app/lib/billing/plans.ts`): SKU caps, the weekly-pattern model, PO builder, and Stocky import are all feature-flagged per plan.
 
 **Access scopes and why.**
 | Scope | Why |
@@ -120,7 +120,7 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 **Honesty notes for reviewers.**
 - The app does not write inventory, does not place orders, and does not email suppliers. PO output is CSV export only.
 - Stocky import is best-effort reference data (parsed and stored, previewed before confirm); it does not migrate suppliers or wire into the PO builder.
-- No AI/ML claims: seasonality detection is simple day-of-week index math (`app/lib/forecast/seasonality.ts`).
+- Forecasting claims are limited to what the code does: classical statistical models fitted and back-tested per variant in the app (`app/lib/forecast/models.ts`, `backtest.ts`); no external AI service and no promises of exact accuracy.
 
 ---
 
@@ -130,13 +130,14 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 | --- | --- |
 | Plans, prices, SKU limits, trial days, feature flags | `app/lib/billing/plans.ts`, `app/shopify.server.ts` (billing config) |
 | Explainable forecasts (explanation[] sentences) | `app/lib/forecast/forecast.ts` |
-| Live recompute on lead time / safety stock / target days | `app/routes/app.variants.$id.tsx` (useMemo over the three fields) |
+| Model selection by back-testing; halves error on simulated catalog | `app/lib/forecast/backtest.ts`, `app/lib/forecast/benchmark.test.ts` |
+| Live recompute on lead time / safety stock / target days | `app/routes/app.variants.$id.tsx` (per-product overrides, useMemo) |
 | PO builder + CSV export only (no emailing) | `app/routes/app.purchase-orders.tsx` (Download CSV / Copy CSV) |
 | Stocky CSV import, preview, best-effort parser | `app/routes/app.import.tsx`, `app/lib/stocky/parser.ts` |
 | Suppliers not carried over / no supplier management | `prisma/schema.prisma` (no supplier table), PO builder uses `unitCost`/`price` only |
-| Per-location forecasting (one location at a time) | `app/lib/settings.ts` (locationId), `app/routes/app.settings.tsx` help text |
+| Forecast all locations combined or one | `app/lib/shopify/adapter.ts` (inventoryAt), dashboard location filter |
 | GDPR webhooks + shop/redact deletion | `app/routes/webhooks.customers.data_request.tsx`, `webhooks.customers.redact.tsx`, `webhooks.shop.redact.tsx` |
 | No customer data stored | `prisma/schema.prisma` (no customer model) |
 | Scopes | `shopify.app.toml`, `.env.example` |
-| No AI/ML (simple index math) | `app/lib/forecast/seasonality.ts` header comment |
+| Forecasting runs in the app, no external AI service | `app/lib/forecast/models.ts` (from-scratch implementations) |
 | Unlisted-first launch, 30–50 day public queue | `DEPLOY.md` steps 7–8 |
