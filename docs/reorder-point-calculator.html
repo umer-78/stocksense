@@ -167,7 +167,7 @@
   </div>
 
   <h2>The formulas</h2>
-  <p>These are the same formulas the StockSense app uses for every variant, so you can check any number it shows you.</p>
+  <p>These are the formulas the StockSense app uses. For a product with steady sales its daily forecast is exactly the simple average below; for trends, weekly patterns or slow sellers the app swaps in the forecasting method that tested best on that product, and the rest of the math stays the same.</p>
   <h3>Average daily sales</h3>
   <code class="f">daily sales = units sold &divide; calendar days in the period</code>
   <p>Count every calendar day, including days with zero sales. Averaging only over days that had sales overstates demand.</p>
@@ -217,7 +217,7 @@ safety stock     = lead-time demand &times; safety %   (round up)</code>
   <h3>How do I calculate safety stock?</h3>
   <p>A simple, common approach is a percentage of lead-time demand, such as 20%. Raise it for unreliable suppliers or volatile sales, lower it for steady sellers with dependable delivery.</p>
   <h3>How is this different from the StockSense app?</h3>
-  <p>The math is identical. The app runs it for every variant in your Shopify store automatically, using your real order history, ranks what needs attention, and builds a purchase order. On Growth and Pro it also adjusts for day-of-week sales patterns.</p>
+  <p>The reorder math is the same. The app runs it for every variant in your Shopify store automatically from your real order history, and instead of a single average it tests several forecasting methods per product (exponential smoothing, a trend model, a slow-seller model, and on Growth and Pro a weekly-pattern model) and uses the most accurate one. It also counts stock already on order, ranks what needs attention and builds a purchase order.</p>
 
   <div class="cta">
     <h2>Run this for every product, automatically</h2>

@@ -83,7 +83,7 @@ describe("app.import action limits", () => {
 
     expect(response.status).toBe(200);
     const body = await response.json();
-    expect(body).toEqual({ saved: true, rowCount: 2 });
+    expect(body).toEqual({ saved: true, rowCount: 2, leadTimeSkus: 0 });
     expect(mocks.stockyImportCreate).toHaveBeenCalledWith({
       data: { shop: SHOP, fileName: "ok.csv", rowCount: 2, data: rows },
     });
