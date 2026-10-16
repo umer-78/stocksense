@@ -314,14 +314,15 @@ export interface SalesWindow {
 /**
  * Aggregate the orders export into units sold per variant per day.
  *
- * Skips cancelled and test orders, uses the line's current quantity (after
- * refunds and removals), ignores custom items without a variant, and keeps
- * only days inside `window`. A sale is dated by `processedAt` (falling back
- * to `createdAt`). Days are UTC calendar days.
+ * Skips cancelled orders and (unless `includeTest`) test orders, uses the
+ * line's current quantity (after refunds and removals), ignores custom items
+ * without a variant, and keeps only days inside `window`. A sale is dated by
+ * `processedAt` (falling back to `createdAt`). Days are UTC calendar days.
  */
 export async function parseOrdersJsonl(
   lines: Lines,
   window: SalesWindow,
+  options: { includeTest?: boolean } = {},
 ): Promise<Record<string, Array<[string, number]>>> {
   const orderDays = new Map<string, string | null>();
   const pending: Array<[string, string, number]> = [];
@@ -360,7 +361,7 @@ export async function parseOrdersJsonl(
       continue;
     }
     const placedAt = order.processedAt || order.createdAt;
-    const skip = Boolean(order.cancelledAt) || order.test === true || !placedAt;
+    const skip = Boolean(order.cancelledAt) || (order.test === true && !options.includeTest) || !placedAt;
     orderDays.set(order.id, skip ? null : String(placedAt).slice(0, 10));
   }
 

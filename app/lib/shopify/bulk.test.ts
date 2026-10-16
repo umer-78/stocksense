@@ -88,6 +88,15 @@ describe("parseVariantsJsonl", () => {
 describe("parseOrdersJsonl", () => {
   const window = { start: "2026-09-01", end: "2026-09-30" };
 
+  it("counts test orders when asked (development stores)", async () => {
+    const lines = [
+      { id: "gid://shopify/Order/1", createdAt: "2026-09-05T10:00:00Z", cancelledAt: null, test: true },
+      { __parentId: "gid://shopify/Order/1", quantity: 2, currentQuantity: 2, variant: { id: V1 } },
+    ];
+    expect(await parseOrdersJsonl(lines, window)).toEqual({});
+    expect((await parseOrdersJsonl(lines, window, { includeTest: true }))[V1]).toEqual([["2026-09-05", 2]]);
+  });
+
   it("sums units per variant per day, using quantities after refunds", async () => {
     const sales = await parseOrdersJsonl(
       [

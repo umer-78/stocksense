@@ -7,9 +7,12 @@ pricing outside the Pricing section (images and icon included).
 
 ## 1. Before you submit
 
-- [ ] **Name check:** search the App Store for "StockSense". The name must be
-      unique (requirement 4.1.2). If it's taken, pick another and use it in
-      `shopify.app.toml` (`name`) and the listing.
+- [ ] **Pick a new name.** "StockSense" is taken: at least two inventory
+      apps already use it (apps.shopify.com/stocksense-5 and /stocksense-7).
+      The name must be unique and lead with a distinctive brand word
+      (requirement 4.1.2). "Restock Radar" and "Stockcast" are taken too.
+      Search apps.shopify.com for your pick, then set it in
+      `shopify.app.toml` (`name`), the listing, and the app's UI text.
 - [ ] **Hosting:** Render's free plan restarts the app on deploys and limits
       hours. Reviewers reject apps that error or time out. The keepalive
       workflow helps; the paid Starter plan removes the risk.
@@ -102,7 +105,9 @@ Alt: "StockSense dashboard highlighting a product that needs reordering"
 >    times.
 >
 > No login or credentials are needed beyond installing the app. Forecasts
-> need order history; a store with no orders shows zero demand and says so.
+> use the last 60 days of orders up to yesterday, so an order placed today
+> counts from tomorrow. On development stores, test orders are counted too.
+> A store with no orders shows zero demand and says so.
 
 **Screencast** (required, 1–3 minutes): record steps 1–5 above.
 Unlisted YouTube or Loom link.
