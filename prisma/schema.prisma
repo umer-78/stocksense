@@ -38,13 +38,51 @@ model Session {
 
 /// Per-shop forecasting preferences (defaults used by the dashboard and detail pages).
 model ShopSettings {
-  shop            String   @id
-  defaultLeadTime Int      @default(14)
-  safetyStockPct  Float    @default(0.2)
-  targetDays      Int      @default(30)
-  lookbackDays    Int      @default(60)
-  locationId      String?
-  updatedAt       DateTime @updatedAt
+  shop              String   @id
+  defaultLeadTime   Int      @default(14)
+  safetyStockPct    Float    @default(0.2)
+  targetDays        Int      @default(30)
+  lookbackDays      Int      @default(60)
+  locationId        String?
+  /// "percent" (share of lead-time demand) or "service" (sized from forecast error).
+  safetyStockMethod String   @default("percent")
+  /// Target chance of not running out during the lead time, for the "service" method.
+  serviceLevel      Float    @default(0.95)
+  updatedAt         DateTime @updatedAt
+}
+
+/// Per-variant overrides of the shop defaults (null = use the default).
+model VariantSettings {
+  shop           String
+  variantId      String
+  leadTime       Int?
+  safetyStockPct Float?
+  targetDays     Int?
+  /// Where the values came from: "manual" or "stocky".
+  source         String   @default("manual")
+  updatedAt      DateTime @updatedAt
+
+  @@id([shop, variantId])
+}
+
+/// Inventory + sales snapshot per shop, built from Shopify bulk operations.
+/// `data` is the last complete snapshot (gzipped JSON) and stays readable while
+/// a refresh runs; `status`/`stage`/`bulkOperationId` track the refresh.
+model ShopSnapshot {
+  shop            String    @id
+  /// "idle" | "running" | "error"
+  status          String    @default("idle")
+  /// "variants" | "orders" while running
+  stage           String?
+  bulkOperationId String?
+  /// Gzipped variants JSON held between the variants and orders stages.
+  pendingVariants Bytes?
+  data            Bytes?
+  lookbackDays    Int       @default(60)
+  error           String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  updatedAt       DateTime  @updatedAt
 }
 
 /// Best-effort Stocky CSV imports (variants / PO history). `data` holds the parsed rows as JSON.

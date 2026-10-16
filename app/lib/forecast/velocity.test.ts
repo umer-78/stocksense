@@ -136,3 +136,40 @@ describe("computeVelocity", () => {
     expect(result.velocity).toBe(10);
   });
 });
+describe("computeVelocity anchored to a window end (today)", () => {
+  it("divides by the whole lookback window, not the span between sales", () => {
+    // One sale of 5 units, 50 days before "today". Unanchored this reads as 5/day.
+    const history: SalesRecord[] = [{ date: "2026-08-12", quantity: 5 }];
+    expect(computeVelocity(history).velocity).toBe(5);
+
+    const result = computeVelocity(history, 60, { end: "2026-10-01" });
+    expect(result.daysCovered).toBe(60);
+    expect(result.velocity).toBeCloseTo(5 / 60, 6);
+    expect(result.lastDate).toBe("2026-10-01");
+  });
+
+  it("counts quiet days at the end of the window", () => {
+    const history: SalesRecord[] = [
+      { date: "2026-09-01", quantity: 10 },
+      { date: "2026-09-02", quantity: 10 },
+    ];
+    const result = computeVelocity(history, 30, { end: "2026-09-30" });
+    expect(result.daysCovered).toBe(30);
+    expect(result.velocity).toBeCloseTo(20 / 30, 6);
+  });
+
+  it("starts the window at the product's creation date when that is later", () => {
+    const history: SalesRecord[] = [{ date: "2026-09-25", quantity: 20 }];
+    const result = computeVelocity(history, 60, { end: "2026-09-30", start: "2026-09-21" });
+    expect(result.daysCovered).toBe(10);
+    expect(result.velocity).toBe(2);
+    expect(result.firstDate).toBe("2026-09-21");
+  });
+
+  it("drops sales after the window end and returns zero with no sales", () => {
+    const result = computeVelocity([{ date: "2026-10-05", quantity: 9 }], 7, { end: "2026-10-01" });
+    expect(result.totalUnits).toBe(0);
+    expect(result.velocity).toBe(0);
+    expect(result.daysCovered).toBe(7);
+  });
+});

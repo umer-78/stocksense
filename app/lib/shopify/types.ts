@@ -5,14 +5,39 @@
  * the app. The forecasting engine (`app/lib/forecast`) never sees Shopify
  * types — it only receives `SalesRecord[]` and plain numbers.
  */
-import type { SalesRecord } from "../forecast";
 
 export interface LocationInfo {
   id: string;
   name: string;
 }
 
-/** One product variant with its inventory at a single location. */
+/** Stock of one variant at one location. */
+export interface InventoryLevelInfo {
+  locationId: string;
+  locationName: string;
+  onHand: number;
+  available: number;
+  committed: number;
+  incoming: number;
+}
+
+/** A variant as stored in the snapshot, with stock at every location. */
+export interface CatalogVariant {
+  /** Shopify GID, e.g. `gid://shopify/ProductVariant/123`. */
+  variantId: string;
+  productId: string;
+  productTitle: string;
+  /** Product creation timestamp; the earliest the variant could have sold. */
+  productCreatedAt: string | null;
+  variantTitle: string;
+  sku: string;
+  price: number | null;
+  /** InventoryItem.unitCost when set. */
+  unitCost: number | null;
+  levels: InventoryLevelInfo[];
+}
+
+/** One product variant with its inventory at one location (or summed across all). */
 export interface VariantInventory {
   /** Shopify GID, e.g. `gid://shopify/ProductVariant/123`. */
   variantId: string;
@@ -29,86 +54,27 @@ export interface VariantInventory {
   available: number;
   committed: number;
   incoming: number;
+  /** Null when quantities are summed across all locations. */
   locationId: string | null;
   locationName: string | null;
+  productCreatedAt?: string | null;
 }
 
-/** A full snapshot of the store's inventory + sales history for forecasting. */
-export interface InventorySnapshot {
-  variants: VariantInventory[];
-  /** Sales history keyed by variant GID. */
-  salesHistory: Map<string, SalesRecord[]>;
-  locations: LocationInfo[];
+/**
+ * A complete inventory + sales snapshot, built by the bulk-operation sync and
+ * stored gzipped in `ShopSnapshot.data`.
+ */
+export interface StoredSnapshot {
+  version: 1;
+  /** When the sync finished (ISO timestamp). */
   fetchedAt: string;
+  /** Sales window: first and last day counted (YYYY-MM-DD). */
+  windowStart: string;
+  windowEnd: string;
+  /** Days of order history fetched (may be capped by order access). */
   lookbackDays: number;
-}
-
-// ---------------------------------------------------------------------------
-// Raw GraphQL response shapes (the adapter's input). Kept structural so the
-// adapter is testable with plain fixture JSON.
-// ---------------------------------------------------------------------------
-
-export interface PageInfo {
-  hasNextPage: boolean;
-  endCursor: string | null;
-}
-
-export interface GraphQLEdge<T> {
-  node: T;
-}
-
-export interface RawInventoryQuantity {
-  name: string;
-  quantity: number;
-}
-
-export interface RawInventoryLevel {
-  id: string;
-  quantities: RawInventoryQuantity[];
-  location: { id: string; name: string } | null;
-}
-
-export interface RawVariant {
-  id: string;
-  title: string;
-  sku: string | null;
-  price: string | null;
-  product: { id: string; title: string; status: string } | null;
-  inventoryItem: {
-    id: string;
-    unitCost: { amount: string; currencyCode: string } | null;
-    inventoryLevels: { edges: GraphQLEdge<RawInventoryLevel>[] };
-  } | null;
-}
-
-export interface RawVariantsResponse {
-  productVariants: {
-    edges: GraphQLEdge<RawVariant>[];
-    pageInfo: PageInfo;
-  };
-}
-
-export interface RawOrderLineItem {
-  id: string;
-  quantity: number;
-  variant: { id: string } | null;
-}
-
-export interface RawOrder {
-  id: string;
-  createdAt: string;
-  lineItems: { edges: GraphQLEdge<RawOrderLineItem>[] };
-}
-
-export interface RawOrdersResponse {
-  orders: {
-    edges: GraphQLEdge<RawOrder>[];
-    pageInfo: PageInfo;
-  };
-}
-
-export interface RawLocationsResponse {
-  locations: {
-    edges: GraphQLEdge<{ id: string; name: string }>[];
-  };
+  locations: LocationInfo[];
+  variants: CatalogVariant[];
+  /** Units sold per variant: [day, quantity] pairs sorted by day. */
+  sales: Record<string, Array<[string, number]>>;
 }

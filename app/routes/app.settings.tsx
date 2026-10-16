@@ -1,12 +1,14 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
+import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import {
   Banner,
   BlockStack,
   Box,
   Button,
   Card,
+  FormLayout,
+  Layout,
   Page,
   Select,
   Text,
@@ -17,67 +19,67 @@ import { useState } from "react";
 
 import { MissingCredentials } from "../components/MissingCredentials";
 import { authenticateAdmin } from "../lib/auth";
-import { getShopSettings, saveShopSettings, sanitizeSettings } from "../lib/settings";
+import { isAuthed } from "../lib/context.server";
+import { DEFAULT_SETTINGS, SERVICE_LEVELS, sanitizeSettings, type ForecastSettings } from "../lib/settings";
+import { getShopSettings, saveShopSettings } from "../lib/settings.server";
 import { fetchLocations } from "../lib/shopify/client";
+import { DEFAULT_ORDER_ACCESS_DAYS, effectiveLookbackDays } from "../lib/shopify/snapshot.server";
 import type { LocationInfo } from "../lib/shopify/types";
 
 interface SettingsLoaderData {
   missingCredentials: boolean;
   error?: string;
-  settings: {
-    defaultLeadTime: number;
-    safetyStockPct: number;
-    targetDays: number;
-    lookbackDays: number;
-    locationId: string | null;
-  };
+  settings: ForecastSettings;
   locations: LocationInfo[];
+  /** Days of orders the app can read with its current access. */
+  maxLookbackDays: number;
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const auth = await authenticateAdmin(request);
-  if (auth.missingCredentials || !auth.admin || !auth.session) {
-    return json<SettingsLoaderData>({
-      missingCredentials: true,
-      settings: { defaultLeadTime: 14, safetyStockPct: 0.2, targetDays: 30, lookbackDays: 60, locationId: null },
-      locations: [],
-    });
+  if (!isAuthed(auth)) {
+    return json<SettingsLoaderData>({ missingCredentials: true, settings: DEFAULT_SETTINGS, locations: [], maxLookbackDays: DEFAULT_ORDER_ACCESS_DAYS });
   }
-
+  const maxLookbackDays = effectiveLookbackDays(365, auth.session.scope);
   try {
-    const [settings, locations] = await Promise.all([
-      getShopSettings(auth.session.shop),
-      fetchLocations(auth.admin),
-    ]);
-    return json<SettingsLoaderData>({
-      missingCredentials: false,
-      settings,
-      locations,
-    });
+    const [settings, locations] = await Promise.all([getShopSettings(auth.session.shop), fetchLocations(auth.admin)]);
+    return json<SettingsLoaderData>({ missingCredentials: false, settings, locations, maxLookbackDays });
   } catch (error) {
     console.error("[stocksense] settings loader failed", error);
     return json<SettingsLoaderData>({
       missingCredentials: false,
       error: error instanceof Error ? error.message : "Failed to load settings",
-      settings: { defaultLeadTime: 14, safetyStockPct: 0.2, targetDays: 30, lookbackDays: 60, locationId: null },
+      settings: await getShopSettings(auth.session.shop).catch(() => DEFAULT_SETTINGS),
       locations: [],
+      maxLookbackDays,
     });
   }
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const auth = await authenticateAdmin(request);
-  if (auth.missingCredentials || !auth.session) {
-    return json({ missingCredentials: true });
+  if (!isAuthed(auth)) {
+    return json({ saved: false }, { status: 401 });
   }
   const form = await request.formData();
-  const settings = sanitizeSettings({
-    defaultLeadTime: Number(form.get("defaultLeadTime")),
-    safetyStockPct: Number(form.get("safetyStockPct")) / 100,
-    targetDays: Number(form.get("targetDays")),
-    lookbackDays: Number(form.get("lookbackDays")),
-    locationId: String(form.get("locationId") ?? ""),
-  });
+  const current = await getShopSettings(auth.session.shop);
+  const field = (name: string) => {
+    const value = form.get(name);
+    return value === null ? undefined : String(value);
+  };
+  const safety = field("safetyStockPct");
+  const settings = sanitizeSettings(
+    {
+      defaultLeadTime: field("defaultLeadTime") === undefined ? undefined : Number(field("defaultLeadTime")),
+      safetyStockPct: safety === undefined ? undefined : Number(safety) / 100,
+      targetDays: field("targetDays") === undefined ? undefined : Number(field("targetDays")),
+      lookbackDays: field("lookbackDays") === undefined ? undefined : Number(field("lookbackDays")),
+      locationId: field("locationId"),
+      safetyStockMethod: field("safetyStockMethod") === "service" ? "service" : field("safetyStockMethod") === undefined ? undefined : "percent",
+      serviceLevel: field("serviceLevel") === undefined ? undefined : Number(field("serviceLevel")),
+    },
+    current,
+  );
   await saveShopSettings(auth.session.shop, settings);
   return json({ saved: true });
 };
@@ -85,9 +87,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Settings() {
   const data = useLoaderData<SettingsLoaderData>();
   const actionData = useActionData<{ saved?: boolean }>();
+  const navigation = useNavigation();
 
   const [leadTime, setLeadTime] = useState(String(data.settings.defaultLeadTime));
+  const [method, setMethod] = useState<string>(data.settings.safetyStockMethod);
   const [safetyStockPct, setSafetyStockPct] = useState(String(Math.round(data.settings.safetyStockPct * 100)));
+  const [serviceLevel, setServiceLevel] = useState(String(data.settings.serviceLevel));
   const [targetDays, setTargetDays] = useState(String(data.settings.targetDays));
   const [lookbackDays, setLookbackDays] = useState(String(data.settings.lookbackDays));
   const [locationId, setLocationId] = useState(data.settings.locationId ?? "");
@@ -96,38 +101,33 @@ export default function Settings() {
     return <MissingCredentials />;
   }
 
+  const lookbackOverCap = Number(lookbackDays) > data.maxLookbackDays;
+
   return (
     <Page>
       <TitleBar title="Settings" />
       <BlockStack gap="500">
         {data.error && (
-          <Banner tone="critical" title="Could not load settings">
-            <Text as="p" variant="bodyMd">
-              {data.error}
-            </Text>
+          <Banner tone="critical" title="Could not load locations">
+            <Text as="p">{data.error}</Text>
           </Banner>
         )}
-        {actionData?.saved && (
+        {actionData?.saved && navigation.state === "idle" && (
           <Banner tone="success" title="Settings saved">
-            <Text as="p" variant="bodyMd">
-              Your forecasting defaults were updated.
-            </Text>
+            <Text as="p">Forecasts now use these defaults. A change to the sales history window refreshes the data in the background.</Text>
           </Banner>
         )}
 
-        <Card>
-          <BlockStack gap="300">
-            <Text as="h2" variant="headingMd">
-              Forecasting defaults
-            </Text>
-            <Text as="p" variant="bodyMd" tone="subdued">
-              These defaults drive the dashboard and the variant detail page. You can also adjust them per variant.
-            </Text>
-            <form method="post">
-              <BlockStack gap="300">
-                <Box maxWidth="400px">
+        <Form method="post">
+          <Layout>
+            <Layout.AnnotatedSection
+              title="Reorder defaults"
+              description="Used for every product unless you set something different on the product's own page."
+            >
+              <Card>
+                <FormLayout>
                   <TextField
-                    label="Default supplier lead time (days)"
+                    label="Supplier lead time (days)"
                     type="number"
                     name="defaultLeadTime"
                     value={leadTime}
@@ -135,25 +135,10 @@ export default function Settings() {
                     autoComplete="off"
                     min={0}
                     max={365}
-                    helpText="How long it takes your supplier to deliver after you order."
+                    helpText="Days from placing an order to the stock being sellable."
                   />
-                </Box>
-                <Box maxWidth="400px">
                   <TextField
-                    label="Safety stock (%)"
-                    type="number"
-                    name="safetyStockPct"
-                    value={safetyStockPct}
-                    onChange={setSafetyStockPct}
-                    autoComplete="off"
-                    min={0}
-                    max={100}
-                    helpText="Extra stock held to absorb demand variability, as a percentage of lead-time demand."
-                  />
-                </Box>
-                <Box maxWidth="400px">
-                  <TextField
-                    label="Target coverage (days)"
+                    label="Target cover (days)"
                     type="number"
                     name="targetDays"
                     value={targetDays}
@@ -161,12 +146,65 @@ export default function Settings() {
                     autoComplete="off"
                     min={1}
                     max={365}
-                    helpText="How many days of stock you want after an order arrives."
+                    helpText="How long one order should last. Usually how often you reorder."
                   />
-                </Box>
-                <Box maxWidth="400px">
+                </FormLayout>
+              </Card>
+            </Layout.AnnotatedSection>
+
+            <Layout.AnnotatedSection
+              title="Safety stock"
+              description="Extra stock held for late deliveries and busier-than-forecast weeks."
+            >
+              <Card>
+                <FormLayout>
+                  <Select
+                    label="How to size safety stock"
+                    name="safetyStockMethod"
+                    value={method}
+                    onChange={setMethod}
+                    options={[
+                      { label: "A percentage of lead-time demand", value: "percent" },
+                      { label: "From measured forecast error (service level)", value: "service" },
+                    ]}
+                  />
+                  {method === "percent" ? (
+                    <TextField
+                      label="Safety stock (%)"
+                      type="number"
+                      name="safetyStockPct"
+                      value={safetyStockPct}
+                      onChange={setSafetyStockPct}
+                      autoComplete="off"
+                      min={0}
+                      max={100}
+                      helpText="20% is a common starting point."
+                    />
+                  ) : (
+                    <>
+                      <input type="hidden" name="safetyStockPct" value={safetyStockPct} />
+                      <Select
+                        label="Chance of not running out during the lead time"
+                        name="serviceLevel"
+                        value={serviceLevel}
+                        onChange={setServiceLevel}
+                        options={SERVICE_LEVELS.map((level) => ({ label: `${Math.round(level * 100)}%`, value: String(level) }))}
+                        helpText="Each product's safety stock is sized from how far its forecasts missed in testing. Higher levels hold more stock."
+                      />
+                    </>
+                  )}
+                </FormLayout>
+              </Card>
+            </Layout.AnnotatedSection>
+
+            <Layout.AnnotatedSection
+              title="Data"
+              description="Which sales and stock the forecasts are built from."
+            >
+              <Card>
+                <FormLayout>
                   <TextField
-                    label="Sales history lookback (days)"
+                    label="Sales history window (days)"
                     type="number"
                     name="lookbackDays"
                     value={lookbackDays}
@@ -174,34 +212,36 @@ export default function Settings() {
                     autoComplete="off"
                     min={7}
                     max={365}
-                    helpText="How far back to look when computing sales velocity."
+                    helpText={
+                      lookbackOverCap
+                        ? `Shopify shares only the last ${data.maxLookbackDays} days of orders with this app, so forecasts will use ${data.maxLookbackDays} days.`
+                        : "At least 28 days lets the app test forecasting methods against your history."
+                    }
                   />
-                </Box>
-                <Box maxWidth="400px">
                   <Select
                     label="Inventory location"
                     name="locationId"
                     value={locationId}
                     onChange={setLocationId}
                     options={[
-                      { label: "All locations (first returned)", value: "" },
-                      ...data.locations.map((location) => ({
-                        label: location.name,
-                        value: location.id,
-                      })),
+                      { label: "All locations combined", value: "" },
+                      ...data.locations.map((location) => ({ label: location.name, value: location.id })),
                     ]}
-                    helpText="Forecast against a single location's inventory."
+                    helpText="Sales are counted store-wide; stock comes from this location."
                   />
-                </Box>
-                <Box>
-                  <Button variant="primary" submit>
-                    Save settings
-                  </Button>
-                </Box>
-              </BlockStack>
-            </form>
-          </BlockStack>
-        </Card>
+                </FormLayout>
+              </Card>
+            </Layout.AnnotatedSection>
+
+            <Layout.Section>
+              <Box paddingBlockEnd="800">
+                <Button variant="primary" submit loading={navigation.state === "submitting"}>
+                  Save settings
+                </Button>
+              </Box>
+            </Layout.Section>
+          </Layout>
+        </Form>
       </BlockStack>
     </Page>
   );

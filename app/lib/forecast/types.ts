@@ -90,6 +90,49 @@ export interface ForecastInput {
   targetDays?: number;
   /** When true, adjust velocity using the detected weekly pattern. */
   applySeasonality?: boolean;
+  /**
+   * Last day of the sales window (normally today, ISO date). When set, velocity
+   * counts every calendar day of the lookback window, not just the span
+   * between the first and last sale.
+   */
+  asOf?: string;
+  /** First day the item could sell (product creation date, ISO). */
+  availableSince?: string;
+  /** Units already on order from the supplier; subtracted from the suggested order. */
+  incoming?: number;
+  /**
+   * "average" (default): velocity × days, the classic formula.
+   * "auto": back-test several forecasting models on this item's history and
+   * use the most accurate one. Requires `asOf`.
+   */
+  method?: "average" | "auto";
+  /** Allow the weekly-season model in "auto" mode (paid plans). */
+  allowSeasonalModel?: boolean;
+  /**
+   * "percent" (default): safety stock = lead-time demand × safetyStockPct.
+   * "service": safety stock sized from measured forecast error so stock lasts
+   * through the lead time with probability `serviceLevel`. Requires `asOf`.
+   */
+  safetyStockMethod?: "percent" | "service";
+  /** Target probability of not running out during the lead time, e.g. 0.95. */
+  serviceLevel?: number;
+}
+
+/** Which forecasting model produced a forecast and how well it tested. */
+export interface ForecastModelInfo {
+  id: string;
+  label: string;
+  /** False when history was too short to back-test, so the average was used. */
+  tested: boolean;
+  /** Back-test error of weekly totals (0.15 = off by 15%); null when nothing sold. */
+  errorPct: number | null;
+  /** Same measure for the simple average, for comparison. */
+  baselineErrorPct: number | null;
+  /** How much lower the chosen model's daily error is than the simple average's. */
+  improvementPct: number | null;
+  /** Number of past weeks used in the back-test. */
+  folds: number;
+  params: Record<string, number>;
 }
 
 /** Result of {@link generateForecast}. */
@@ -115,4 +158,16 @@ export interface ForecastResult {
   explanation: string[];
   /** Non-fatal notes about data quality and assumptions. */
   warnings: string[];
+  /** Units on order that were counted against the suggestion. */
+  incoming: number;
+  /** Expected units sold over the target cover period. */
+  coverDemand: number;
+  /** Model details in "auto" mode; null for the classic average. */
+  model: ForecastModelInfo | null;
+  /** Projected daily demand for the next 28 days ("auto" mode), else []. */
+  dailyForecast: number[];
+  /** How much to trust the numbers, from history length and back-test error. */
+  confidence: "high" | "medium" | "low";
+  safetyStockMethod: "percent" | "service";
+  serviceLevel: number;
 }

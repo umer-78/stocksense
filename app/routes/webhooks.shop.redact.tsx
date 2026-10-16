@@ -2,14 +2,15 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { authenticateWebhook } from "../lib/auth";
 import db from "../db.server";
+import { deleteShopData } from "../lib/shop-data.server";
 
 /**
  * GDPR compliance webhook: shop/redact.
  *
  * Shopify asks the app to delete all data for the shop. StockSense deletes the
- * shop's settings, Stocky imports, privacy-event log and auth sessions (which
- * hold PII such as the shop owner's email and access tokens), then
- * acknowledges with 200.
+ * shop's settings, per-product overrides, inventory snapshot, Stocky imports,
+ * privacy-event log and auth sessions (which hold PII such as the shop
+ * owner's email and access tokens), then acknowledges with 200.
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { payload, shop, topic, missingCredentials } = await authenticateWebhook(request);
@@ -28,12 +29,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   });
 
-  await db.$transaction([
-    db.shopSettings.deleteMany({ where: { shop } }),
-    db.stockyImport.deleteMany({ where: { shop } }),
-    db.privacyEvent.deleteMany({ where: { shop } }),
-    db.session.deleteMany({ where: { shop } }),
-  ]);
+  await deleteShopData(shop);
 
   return json({});
 };

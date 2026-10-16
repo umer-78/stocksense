@@ -3,6 +3,7 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 
 import { action as dataRequestAction } from "../routes/webhooks.customers.data_request";
 import { action as shopRedactAction } from "../routes/webhooks.shop.redact";
+import { action as uninstalledAction } from "../routes/webhooks.app.uninstalled";
 
 const mocks = vi.hoisted(() => ({
   authenticateWebhook: vi.fn(),
@@ -12,6 +13,13 @@ const mocks = vi.hoisted(() => ({
   stockyImportDeleteMany: vi.fn(),
   privacyEventDeleteMany: vi.fn(),
   sessionDeleteMany: vi.fn(),
+  variantSettingsDeleteMany: vi.fn(),
+  shopSnapshotDeleteMany: vi.fn(),
+  webhook: vi.fn(),
+}));
+
+vi.mock("../shopify.server", () => ({
+  authenticate: { webhook: mocks.webhook },
 }));
 
 vi.mock("../lib/auth", () => ({
@@ -28,6 +36,8 @@ vi.mock("../db.server", () => ({
     shopSettings: { deleteMany: mocks.shopSettingsDeleteMany },
     stockyImport: { deleteMany: mocks.stockyImportDeleteMany },
     session: { deleteMany: mocks.sessionDeleteMany },
+    variantSettings: { deleteMany: mocks.variantSettingsDeleteMany },
+    shopSnapshot: { deleteMany: mocks.shopSnapshotDeleteMany },
   },
 }));
 
@@ -152,9 +162,11 @@ describe("webhooks.shop.redact", () => {
     mocks.stockyImportDeleteMany.mockReturnValue("stockyImport-delete");
     mocks.privacyEventDeleteMany.mockReturnValue("privacyEvent-delete");
     mocks.sessionDeleteMany.mockReturnValue("session-delete");
+    mocks.variantSettingsDeleteMany.mockReturnValue("variantSettings-delete");
+    mocks.shopSnapshotDeleteMany.mockReturnValue("shopSnapshot-delete");
   });
 
-  it("deletes every per-shop table (settings, imports, privacy events, sessions) in one transaction", async () => {
+  it("deletes every per-shop table in one transaction", async () => {
     mocks.authenticateWebhook.mockResolvedValue({
       missingCredentials: false,
       payload: { shop_id: 954889, shop_domain: SHOP },
@@ -171,10 +183,14 @@ describe("webhooks.shop.redact", () => {
     expect(response.status).toBe(200);
     expect(mocks.transaction).toHaveBeenCalledWith([
       "shopSettings-delete",
+      "variantSettings-delete",
+      "shopSnapshot-delete",
       "stockyImport-delete",
       "privacyEvent-delete",
       "session-delete",
     ]);
+    expect(mocks.variantSettingsDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
+    expect(mocks.shopSnapshotDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
     expect(mocks.shopSettingsDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
     expect(mocks.stockyImportDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
     expect(mocks.privacyEventDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
@@ -195,5 +211,35 @@ describe("webhooks.shop.redact", () => {
 
     expect(response.status).toBe(200);
     expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+});
+describe("webhooks.app.uninstalled", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.shopSettingsDeleteMany.mockReturnValue("shopSettings-delete");
+    mocks.stockyImportDeleteMany.mockReturnValue("stockyImport-delete");
+    mocks.privacyEventDeleteMany.mockReturnValue("privacyEvent-delete");
+    mocks.sessionDeleteMany.mockReturnValue("session-delete");
+    mocks.variantSettingsDeleteMany.mockReturnValue("variantSettings-delete");
+    mocks.shopSnapshotDeleteMany.mockReturnValue("shopSnapshot-delete");
+    mocks.transaction.mockResolvedValue([]);
+  });
+
+  it("deletes the shop's settings, overrides, snapshot, imports and sessions, keeping the privacy log", async () => {
+    mocks.webhook.mockResolvedValue({ shop: SHOP, topic: "APP_UNINSTALLED", session: null });
+
+    const response = await uninstalledAction(
+      args(new Request(`https://example.com/webhooks/app/uninstalled`, { method: "POST" })),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.transaction).toHaveBeenCalledWith([
+      "shopSettings-delete",
+      "variantSettings-delete",
+      "shopSnapshot-delete",
+      "stockyImport-delete",
+      "session-delete",
+    ]);
+    expect(mocks.privacyEventDeleteMany).not.toHaveBeenCalled();
   });
 });

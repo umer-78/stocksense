@@ -164,7 +164,7 @@
 
     <h2>4. Set up forecasting again</h2>
     <ol>
-      <li><strong>Install the app and pick a location.</strong> StockSense forecasts one location at a time; you can switch in settings.</li>
+      <li><strong>Install the app and pick a location.</strong> Forecast all locations combined or a single one; you can switch at any time.</li>
       <li><strong>Enter the settings from step 2.</strong> Defaults are a 14-day lead time, 20% safety stock, 30 days of cover and a 60-day sales lookback, so it works before you change anything.</li>
       <li><strong>Import your Stocky CSVs</strong> (optional). Both files are accepted and stored as reference history.</li>
       <li><strong>Check the dashboard.</strong> Variants are ranked critical (will run out before a new order could arrive), low (within twice your lead time) or healthy.</li>
@@ -177,7 +177,7 @@
       <li>Add what needs ordering to the purchase-order builder, adjust quantities, and export the CSV.</li>
       <li>Send it to your supplier. Nothing is ordered automatically.</li>
     </ol>
-    <p>Want to sanity-check the math first? Run your own numbers through the free <a href="reorder-point-calculator.html">reorder point calculator</a>. It uses the same formulas as the app.</p>
+    <p>Want to sanity-check the math first? Run your own numbers through the free <a href="reorder-point-calculator.html">reorder point calculator</a>. It uses the app's reorder formulas with a simple average; the app itself picks the best-tested forecast for each product.</p>
 
     <h2>Stocky and StockSense compared</h2>
     <div class="scroll">
@@ -186,6 +186,7 @@
       <tbody>
         <tr><th scope="row">Status</th><td>Discontinued August 2026</td><td>Early access, in App Store review</td></tr>
         <tr><th scope="row">Reorder suggestions</th><td>Yes</td><td>Yes, with the arithmetic shown for each number</td></tr>
+        <tr><th scope="row">Forecast method</th><td>&mdash;</td><td>Several methods tested on each product's own sales; the most accurate is used</td></tr>
         <tr><th scope="row">Purchase orders</th><td>Created and tracked in app</td><td>Built in app, exported as CSV</td></tr>
         <tr><th scope="row">Suppliers and receiving</th><td>Yes</td><td>No</td></tr>
         <tr><th scope="row">Writes to your inventory</th><td>Yes</td><td>No, read-only</td></tr>

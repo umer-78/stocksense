@@ -60,10 +60,10 @@
       "@type": "FAQPage",
       "mainEntity": [
         { "@type": "Question", "name": "Is StockSense a drop-in Stocky replacement?", "acceptedAnswer": { "@type": "Answer", "text": "It covers the part most stores relied on: knowing what to reorder and when. You can import Stocky's variant and purchase-order CSV exports as reference history. It does not carry over suppliers and does not place orders, so it is a focused replacement rather than a full match." } },
-        { "@type": "Question", "name": "How does StockSense calculate the reorder point?", "acceptedAnswer": { "@type": "Answer", "text": "Lead-time demand is average daily sales multiplied by your supplier lead time. Safety stock is a percentage of that (20% by default). The reorder point is lead-time demand plus safety stock, rounded up. The suggested order brings stock back to your target days of cover plus safety stock, minus what is on hand." } },
-        { "@type": "Question", "name": "How much sales history does StockSense need?", "acceptedAnswer": { "@type": "Answer", "text": "It averages sales over a lookback window, 60 days by default and adjustable from 7 to 365 days. Forecasts based on fewer than 14 days of history are flagged as low confidence." } },
+        { "@type": "Question", "name": "How does StockSense calculate the reorder point?", "acceptedAnswer": { "@type": "Answer", "text": "Lead-time demand is the forecast demand over your supplier lead time. The forecast comes from whichever method predicted this product's recent sales best: a simple average, exponential smoothing, a trend model, a weekly-pattern model or a model for slow sellers. Safety stock is a percentage of lead-time demand (20% by default), or sized from measured forecast error for a chosen service level. The reorder point is lead-time demand plus safety stock, rounded up. The suggested order brings stock back to your target days of cover plus safety stock, minus sellable stock and units already on order." } },
+        { "@type": "Question", "name": "How much sales history does StockSense need?", "acceptedAnswer": { "@type": "Answer", "text": "It reads up to 60 days of orders by default, which is what Shopify shares with apps unless the store grants access to all orders. With at least 4 weeks of sales it tests its forecasting methods against your own history; with less it uses the simple average and marks the forecast as low confidence." } },
         { "@type": "Question", "name": "Will StockSense change my inventory or place orders?", "acceptedAnswer": { "@type": "Answer", "text": "No. It only reads inventory and order history. The purchase-order builder exports a CSV for you to send to your supplier. Nothing is written back to Shopify and nothing is ordered automatically." } },
-        { "@type": "Question", "name": "Does StockSense work with multiple locations?", "acceptedAnswer": { "@type": "Answer", "text": "It forecasts one location at a time. You choose the location in settings and can switch whenever you like." } },
+        { "@type": "Question", "name": "Does StockSense work with multiple locations?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Forecast all locations combined, or pick a single location on the dashboard or in settings. Sales are counted store-wide." } },
         { "@type": "Question", "name": "How much does StockSense cost?", "acceptedAnswer": { "@type": "Answer", "text": "Free for up to 100 variants. Growth is $19 per month for up to 2,000 variants and Pro is $49 per month for unlimited variants. Paid plans include a 14-day free trial and are billed through Shopify, so you can cancel from your Shopify admin at any time." } },
         { "@type": "Question", "name": "What happens to my data if I uninstall StockSense?", "acceptedAnswer": { "@type": "Answer", "text": "Your store's settings and any imported CSV files are deleted. StockSense does not copy your Shopify orders or products into its database and stores no customer data." } }
       ]
@@ -281,7 +281,7 @@
       </div>
       <div class="ex-body">
         <div class="row"><span class="k">Average daily sales<span class="why">42 units sold over the last 60 days</span></span><span class="v">0.70 / day</span></div>
-        <div class="row"><span class="k">On hand today<span class="why">current inventory at this location</span></span><span class="v">6</span></div>
+        <div class="row"><span class="k">Available today<span class="why">sellable stock, after open orders</span></span><span class="v">6</span></div>
         <div class="row"><span class="k">Days to stockout<span class="why">6 on hand divided by 0.70 per day</span></span><span class="v">8.6 days</span></div>
         <div class="row"><span class="k">Lead-time demand<span class="why">0.70 / day over a 14-day supplier lead time</span></span><span class="v">9.8</span></div>
         <div class="row"><span class="k">Safety stock<span class="why">20% buffer on lead-time demand, rounded up</span></span><span class="v">2</span></div>
@@ -297,10 +297,10 @@
   <div class="wrap">
     <p class="kicker">How it works</p>
     <h2>From sales history to a purchase order</h2>
-    <p class="section-lead">Three reads of the Shopify Admin API, no writes, one location at a time.</p>
+    <p class="section-lead">Two bulk exports from Shopify, no writes, every location or just one.</p>
     <div class="steps">
       <div class="step"><div class="n">1</div><div><h3>It reads your real sales</h3><p>StockSense pulls each variant's order history from Shopify and works out its sales velocity: units sold divided by the calendar days in your lookback window (60 days by default), so days with no sales count as zero rather than being skipped.</p></div></div>
-      <div class="step"><div class="n">2</div><div><h3>It projects the stockout and the reorder</h3><p>From on-hand inventory it works out days to stockout, then the reorder point and order quantity from your supplier lead time, safety-stock buffer and target days of cover. Each figure is shown with the arithmetic behind it. On Growth and Pro, a day-of-week pattern is applied when there is enough history to trust it.</p></div></div>
+      <div class="step"><div class="n">2</div><div><h3>It tests forecasting methods on your own sales</h3><p>For every product, StockSense tries several forecasting methods (a simple average, exponential smoothing, a trend model, a weekly-pattern model and a model for slow sellers) on your last few weeks of sales, and keeps the one that predicted best. From sellable stock and units already on order it then works out days to stockout, the reorder point and the order quantity, showing the arithmetic and how accurate the chosen method was. The weekly-pattern model is on Growth and Pro.</p></div></div>
       <div class="step"><div class="n">3</div><div><h3>You adjust and export a purchase order</h3><p>Change the lead time, safety stock or target days and every recommendation recomputes at once. The purchase-order builder lists what needs reordering and exports a CSV for your supplier. It never emails or places an order for you.</p></div></div>
     </div>
   </div>
@@ -315,8 +315,9 @@
       <div class="panel">
         <h3>What StockSense does</h3>
         <ul class="list">
-          <li>Sales velocity and days to stockout for every variant</li>
-          <li>Reorder point and suggested order quantity, each explained</li>
+          <li>Picks the most accurate forecasting method for each product by testing it on your sales</li>
+          <li>Days to stockout, reorder point and order quantity, each explained</li>
+          <li>All locations combined, or one location</li>
           <li>An urgency dashboard ranked critical, low, or healthy</li>
           <li>Live recompute when you change lead time or safety stock</li>
           <li>A purchase-order builder with CSV export</li>
@@ -328,7 +329,7 @@
         <ul class="list no">
           <li>Place or email orders. CSV export only.</li>
           <li>Manage suppliers or receiving</li>
-          <li>Forecast more than one location at a time</li>
+          <li>Know when stock on order will arrive. Incoming units are counted, not dated.</li>
           <li>Write to your inventory. It reads only.</li>
           <li>Store any customer data. Shopify's GDPR webhooks are implemented.</li>
           <li>Promise a forecast on thin data. It flags low confidence instead.</li>
@@ -356,7 +357,7 @@
       <tbody>
         <tr><th scope="row">Variants tracked</th><td>up to 100</td><td>up to 2,000</td><td>unlimited</td></tr>
         <tr><th scope="row">Velocity and days to stockout</th><td>yes</td><td>yes</td><td>yes</td></tr>
-        <tr><th scope="row">Day-of-week seasonality</th><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><th scope="row">Weekly-pattern forecast model</th><td>no</td><td>yes</td><td>yes</td></tr>
         <tr><th scope="row">Purchase-order builder and CSV</th><td>no</td><td>yes</td><td>yes</td></tr>
         <tr><th scope="row">Stocky CSV import</th><td>yes</td><td>yes</td><td>yes</td></tr>
         <tr><th scope="row">Free trial</th><td>&mdash;</td><td>14 days</td><td>14 days</td></tr>
@@ -392,12 +393,13 @@
     <h2>Before you install</h2>
     <div class="faq">
       <details><summary>Is this a drop-in Stocky replacement?</summary><p>It covers the part most stores relied on: knowing what to reorder and when. You can import Stocky's variant and purchase-order CSV exports as reference history. It does not carry over suppliers, and it does not place orders, so it is a focused replacement rather than a full match. The <a href="stocky-replacement.html">Stocky replacement guide</a> walks through the switch.</p></details>
-      <details><summary>How does it calculate the reorder point?</summary><p>Lead-time demand is average daily sales times your supplier lead time. Safety stock is a percentage of that (20% by default). The reorder point is lead-time demand plus safety stock, rounded up. The suggested order brings stock back to your target days of cover plus safety stock, minus what is on hand. Try it with your own numbers in the <a href="reorder-point-calculator.html">reorder point calculator</a>.</p></details>
-      <details><summary>How much sales history does it need?</summary><p>It averages sales over a lookback window: 60 days by default, adjustable from 7 to 365 days. Forecasts based on fewer than 14 days of history are flagged as low confidence. Day-of-week seasonality only kicks in when there are at least 14 days of sales covering every day of the week.</p></details>
+      <details><summary>How does it calculate the reorder point?</summary><p>Lead-time demand is the forecast demand over your supplier lead time. Safety stock is a percentage of that (20% by default), or sized from how far the forecast has missed for a service level you choose. The reorder point is lead-time demand plus safety stock, rounded up. The suggested order brings stock back to your target days of cover plus safety stock, minus sellable stock and anything already on order. For steady sellers the forecast is the simple average, which is what the <a href="reorder-point-calculator.html">reorder point calculator</a> uses.</p></details>
+      <details><summary>Which forecasting method does it use?</summary><p>It picks one per product. StockSense fits a simple average, a recent 4-week average, exponential smoothing, a damped trend model, a weekly-pattern (Holt-Winters) model and a slow-seller (Croston) model, then tests each one by forecasting weeks it has already seen. The method with the smallest error is used, and the product page shows how far off it was. On a simulated catalog this halved forecast error compared with a plain average. Everything runs in the app; no data is sent to an outside AI service.</p></details>
+      <details><summary>How much sales history does it need?</summary><p>It reads up to 60 days of orders by default, which is what Shopify shares with apps unless the store grants access to all orders. With at least 4 weeks of sales it tests forecasting methods against your history; with less it uses the simple average and marks the forecast as low confidence. New products are measured from the day they were created, not penalized for days before they existed.</p></details>
       <details><summary>How does it handle a product with very little sales history?</summary><p>It still shows a figure, but marks the forecast as low confidence rather than presenting a thin-data guess as if it were certain. The math on the card shows exactly what the estimate is based on.</p></details>
       <details><summary>Will it change my inventory or place orders?</summary><p>No. StockSense only reads your inventory and order history. The purchase-order builder exports a CSV for you to send to your supplier. Nothing is written back to Shopify and nothing is ordered automatically.</p></details>
-      <details><summary>Does it work with multiple locations?</summary><p>It forecasts one location at a time. You pick the location in settings and can switch whenever you like.</p></details>
-      <details><summary>What do I need to set up after installing?</summary><p>Nothing, to start. The defaults are a 14-day supplier lead time, 20% safety stock, 30 days of target cover and a 60-day sales lookback, so the dashboard works straight away. Change any of them in settings and every recommendation recomputes.</p></details>
+      <details><summary>Does it work with multiple locations?</summary><p>Yes. Forecast all locations combined, or pick one location on the dashboard or in settings. Sales are counted store-wide; stock comes from the location you choose.</p></details>
+      <details><summary>What do I need to set up after installing?</summary><p>Nothing, to start. The defaults are a 14-day supplier lead time, 20% safety stock, 30 days of target cover and a 60-day sales lookback, so the dashboard works straight away. Change any of them in settings, or give a product its own lead time, and every recommendation recomputes. The first sync with Shopify takes under a minute for most stores.</p></details>
       <details><summary>How does billing work, and can I cancel?</summary><p>The Free plan covers up to 100 variants with no charge. Growth ($19/month, up to 2,000 variants) and Pro ($49/month, unlimited) include a 14-day free trial. All charges go through your Shopify bill, and you cancel from your Shopify admin like any other app.</p></details>
       <details><summary>What happens to my data if I uninstall?</summary><p>Your store's settings and any imported CSV files are deleted. StockSense does not copy your Shopify orders or products into its database; it fetches them from Shopify when needed. See the <a href="privacy-policy.html">privacy policy</a>.</p></details>
       <details><summary>What about customer data and GDPR?</summary><p>The app stores no customer data. It implements Shopify's three mandated privacy webhooks for data requests, customer redaction and shop redaction.</p></details>

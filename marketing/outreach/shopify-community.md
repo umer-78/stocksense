@@ -35,7 +35,7 @@ imports Stocky CSV exports so you don't lose your history.
 
 What it does NOT do yet, honestly: it doesn't email suppliers or place orders
 (CSV export only), it doesn't manage suppliers (you re-enter those yourself),
-and it forecasts one location at a time. Free plan covers 100 SKUs; paid plans
+and it counts stock on order without knowing when it arrives. Free plan covers 100 SKUs; paid plans
 start at $19/mo.
 
 If you're on a tight budget, start with options 1 or 2. If you want the
