@@ -4,10 +4,14 @@
  * bulk operation instead (see `bulk.ts`).
  */
 
-/** Active locations; 250 × 1 point + connection ≈ 252 points. */
+/**
+ * Active locations, including fulfillment-service ("legacy") locations such
+ * as a 3PL warehouse, which Shopify leaves out unless asked.
+ * 250 × 1 point + connection ≈ 252 points.
+ */
 export const LOCATIONS_QUERY = `#graphql
   query Locations {
-    locations(first: 250) {
+    locations(first: 250, includeLegacy: true) {
       edges {
         node {
           id
