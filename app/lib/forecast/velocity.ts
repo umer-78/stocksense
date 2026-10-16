@@ -26,10 +26,23 @@ function toIsoDate(date: Date): string {
  * - Invalid dates are skipped; negative/NaN quantities are clamped to 0.
  * - Empty history returns a velocity of 0 (never NaN).
  * - `lookbackDays` restricts the window to the most recent N calendar days.
+ * - `window.end` (normally today) anchors the window to a real date instead of
+ *   the last sale. Without it, a product that sold 5 units once, 50 days ago,
+ *   would look like it sells 5 a day. `window.start` (normally the product's
+ *   creation date) stops a new product's velocity being diluted by days
+ *   before it existed.
  */
+export interface VelocityWindow {
+  /** Last day of the window, ISO date. */
+  end?: string;
+  /** Earliest day the item could have sold, ISO date. */
+  start?: string;
+}
+
 export function computeVelocity(
   salesHistory: SalesRecord[],
   lookbackDays?: number,
+  window: VelocityWindow = {},
 ): VelocityResult {
   const history = Array.isArray(salesHistory) ? salesHistory : [];
 
@@ -41,6 +54,11 @@ export function computeVelocity(
     }
     const quantity = Math.max(0, toFiniteNumber(record.quantity, 0));
     entries.push({ day: startOfUtcDay(date).getTime(), quantity });
+  }
+
+  const windowEnd = window.end ? parseDate(window.end) : null;
+  if (windowEnd) {
+    return anchoredVelocity(entries, startOfUtcDay(windowEnd).getTime(), lookbackDays, window.start);
   }
 
   if (entries.length === 0) {
@@ -87,5 +105,46 @@ export function computeVelocity(
     sampleSize: inWindow.length,
     firstDate: toIsoDate(new Date(firstDay)),
     lastDate: toIsoDate(new Date(lastDay)),
+  };
+}
+function validLookback(lookbackDays: number | undefined): number | null {
+  return typeof lookbackDays === "number" && Number.isFinite(lookbackDays) && lookbackDays > 0
+    ? Math.floor(lookbackDays)
+    : null;
+}
+
+/** Velocity over a window that ends on a fixed date (today), zero-sales days included. */
+function anchoredVelocity(
+  entries: Array<{ day: number; quantity: number }>,
+  endDay: number,
+  lookbackDays: number | undefined,
+  availableSince: string | undefined,
+): VelocityResult {
+  const lookback = validLookback(lookbackDays);
+  let startDay = lookback
+    ? endDay - (lookback - 1) * DAY_MS
+    : Math.min(endDay, ...entries.map((e) => e.day));
+  const since = availableSince ? parseDate(availableSince) : null;
+  if (since) {
+    startDay = Math.min(endDay, Math.max(startDay, startOfUtcDay(since).getTime()));
+  }
+
+  const byDay = new Map<number, number>();
+  for (const entry of entries) {
+    if (entry.day >= startDay && entry.day <= endDay) {
+      byDay.set(entry.day, (byDay.get(entry.day) ?? 0) + entry.quantity);
+    }
+  }
+  const daysCovered = Math.round((endDay - startDay) / DAY_MS) + 1;
+  const totalUnits = [...byDay.values()].reduce((sum, q) => sum + q, 0);
+
+  return {
+    velocity: daysCovered > 0 ? totalUnits / daysCovered : 0,
+    totalUnits,
+    daysCovered,
+    activeDays: [...byDay.values()].filter((q) => q > 0).length,
+    sampleSize: byDay.size,
+    firstDate: toIsoDate(new Date(startDay)),
+    lastDate: toIsoDate(new Date(endDay)),
   };
 }
