@@ -194,7 +194,7 @@ export default function PurchaseOrders() {
             <Box padding="400" borderBlockEndWidth="025" borderColor="border">
               <InlineStack align="space-between" blockAlign="center" gap="300" wrap>
                 <Text as="p">
-                  {data.rows.length} {data.rows.length === 1 ? "variant needs" : "variants need"} reordering. Quantities start at the forecast suggestion.
+                  {data.rows.length} {data.rows.length === 1 ? "variant is" : "variants are"} below target stock. Quantities start at the forecast suggestion.
                 </Text>
                 <InlineStack gap="200">
                   <Button size="slim" onClick={() => setSelected(new Set(data.rows.filter((r) => r.status === "critical").map((r) => r.variantId)))}>
@@ -211,7 +211,7 @@ export default function PurchaseOrders() {
             </Box>
             {data.rows.length === 0 ? (
               <Box padding="400">
-                <Text as="p">Nothing needs reordering right now.</Text>
+                <Text as="p">Every variant is at or above its target stock.</Text>
               </Box>
             ) : (
               <DataTable

@@ -29,7 +29,7 @@ import {
   VARIANTS_BULK_QUERY,
   type GraphqlClient,
 } from "./bulk";
-import { fetchLocations } from "./client";
+import { fetchLocations, isDevelopmentStore } from "./client";
 import type { CatalogVariant, LocationInfo, StoredSnapshot } from "./types";
 
 const gzipAsync = promisify(gzip);
@@ -38,10 +38,11 @@ const gunzipAsync = promisify(gunzip);
 const DAY_MS = 86_400_000;
 /**
  * Bump when the meaning of stored data changes (2: gift cards skipped, 3PL
- * locations listed, sales dated by processedAt). Older snapshots re-sync on
- * the next load instead of waiting out STALE_AFTER_MS.
+ * locations listed, sales dated by processedAt; 3: test orders counted on
+ * development stores). Older snapshots re-sync on the next load instead of
+ * waiting out STALE_AFTER_MS.
  */
-export const SNAPSHOT_VERSION = 2;
+export const SNAPSHOT_VERSION = 3;
 export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;
 /** A running sync with no progress for this long is restarted. */
 export const STUCK_AFTER_MS = 20 * 60 * 1000;
@@ -218,7 +219,11 @@ async function advance(
       return;
     }
 
-    const sales = operation.url ? await parseOrdersJsonl(jsonlObjects(operation.url, fetchImpl), window) : {};
+    // Development stores (including app reviewers') only have test orders.
+    const includeTest = await isDevelopmentStore(client).catch(() => false);
+    const sales = operation.url
+      ? await parseOrdersJsonl(jsonlObjects(operation.url, fetchImpl), window, { includeTest })
+      : {};
     const variants = row.pendingVariants ? await decode<CatalogVariant[]>(row.pendingVariants) : [];
     const locations = mergeLocations(await fetchLocations(client), variants);
     const now = options.now ?? new Date();
