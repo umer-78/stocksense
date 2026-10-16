@@ -24,7 +24,7 @@ export const VARIANTS_BULK_QUERY = `{
         title
         sku
         price
-        product { id title status createdAt }
+        product { id title status createdAt isGiftCard }
         inventoryItem {
           id
           tracked
@@ -43,13 +43,18 @@ export const VARIANTS_BULK_QUERY = `{
   }
 }`;
 
-/** Orders created on or after `sinceDay` (YYYY-MM-DD), with their line items. */
+/**
+ * Orders processed on or after `sinceDay` (YYYY-MM-DD), with their line items.
+ * `processedAt` is when the sale happened; `createdAt` is when the record was
+ * made, which for orders imported from another system is the import date.
+ */
 export function ordersBulkQuery(sinceDay: string): string {
   return `{
-  orders(query: "created_at:>=${sinceDay}") {
+  orders(query: "processed_at:>=${sinceDay}") {
     edges {
       node {
         id
+        processedAt
         createdAt
         cancelledAt
         test
@@ -189,7 +194,7 @@ interface RawBulkVariant {
   title?: string;
   sku?: string | null;
   price?: string | null;
-  product?: { id?: string; title?: string; status?: string; createdAt?: string } | null;
+  product?: { id?: string; title?: string; status?: string; createdAt?: string; isGiftCard?: boolean } | null;
   inventoryItem?: { id?: string; tracked?: boolean; unitCost?: { amount?: string } | null } | null;
 }
 
@@ -215,7 +220,7 @@ function toNumber(value: string | null | undefined): number | null {
 /**
  * Build the catalog from the variants export. Only variants of ACTIVE products
  * with tracked inventory are kept: drafts and archived products are not on
- * sale, and untracked items have no stock to forecast.
+ * sale, untracked items have no stock to forecast, and gift cards are digital.
  */
 export async function parseVariantsJsonl(lines: Lines): Promise<CatalogVariant[]> {
   const variants = new Map<string, CatalogVariant>();
@@ -256,7 +261,7 @@ export async function parseVariantsJsonl(lines: Lines): Promise<CatalogVariant[]
     if (raw.product?.status && raw.product.status !== "ACTIVE") {
       continue;
     }
-    if (raw.inventoryItem?.tracked === false) {
+    if (raw.inventoryItem?.tracked === false || raw.product?.isGiftCard === true) {
       continue;
     }
     variants.set(raw.id, {
@@ -286,6 +291,7 @@ export async function parseVariantsJsonl(lines: Lines): Promise<CatalogVariant[]
 
 interface RawBulkOrder {
   id: string;
+  processedAt?: string | null;
   createdAt?: string;
   cancelledAt?: string | null;
   test?: boolean;
@@ -310,7 +316,8 @@ export interface SalesWindow {
  *
  * Skips cancelled and test orders, uses the line's current quantity (after
  * refunds and removals), ignores custom items without a variant, and keeps
- * only days inside `window`. Days are UTC calendar days.
+ * only days inside `window`. A sale is dated by `processedAt` (falling back
+ * to `createdAt`). Days are UTC calendar days.
  */
 export async function parseOrdersJsonl(
   lines: Lines,
@@ -352,8 +359,9 @@ export async function parseOrdersJsonl(
     if (typeof order.id !== "string" || !order.id.includes("/Order/")) {
       continue;
     }
-    const skip = Boolean(order.cancelledAt) || order.test === true || !order.createdAt;
-    orderDays.set(order.id, skip ? null : String(order.createdAt).slice(0, 10));
+    const placedAt = order.processedAt || order.createdAt;
+    const skip = Boolean(order.cancelledAt) || order.test === true || !placedAt;
+    orderDays.set(order.id, skip ? null : String(placedAt).slice(0, 10));
   }
 
   for (const [orderId, variantId, qty] of pending) {
