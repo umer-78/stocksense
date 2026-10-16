@@ -97,6 +97,9 @@ See **[DEPLOY.md](DEPLOY.md)** — a copy-paste runbook for Render + Supabase
 (free tier), the marketing site's custom domain and Google Search Console
 setup, and the free GitHub workflows (CodeQL, site checks).
 
+To publish on the Shopify App Store, follow **[APP_STORE_LISTING.md](APP_STORE_LISTING.md)**:
+pre-submission checklist, listing text, pricing, screenshots and reviewer instructions.
+
 ## Marketing
 
 - **Website:** [`docs/`](docs/) on GitHub Pages —

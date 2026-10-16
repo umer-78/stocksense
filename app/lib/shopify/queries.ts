@@ -20,3 +20,13 @@ export const LOCATIONS_QUERY = `#graphql
       }
     }
   }`;
+
+/** Whether the shop is a Partner development store (which can't be charged). */
+export const SHOP_PLAN_QUERY = `#graphql
+  query ShopPlan {
+    shop {
+      plan {
+        partnerDevelopment
+      }
+    }
+  }`;

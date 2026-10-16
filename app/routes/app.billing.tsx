@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation } from "@remix-run/react";
 import {
   Badge,
@@ -17,6 +17,7 @@ import { TitleBar } from "@shopify/app-bridge-react";
 
 import { MissingCredentials } from "../components/MissingCredentials";
 import { authenticateAdmin } from "../lib/auth";
+import { isDevelopmentStore } from "../lib/shopify/client";
 import { PAID_PLAN_NAMES, PLANS, isTestBilling, planFromSubscription, type PlanId } from "../lib/billing/plans";
 
 interface BillingLoaderData {
@@ -56,18 +57,31 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
   const form = await request.formData();
   const plan = String(form.get("plan") ?? "");
+  // Development stores (including the ones app reviewers use) can't pay, so
+  // they always get test charges, even in production.
+  const isTest = isTestBilling() || (auth.admin ? await isDevelopmentStore(auth.admin) : false);
+
+  if (plan === "Free") {
+    // Downgrade: cancel the active subscription, with a prorated credit for
+    // the unused part of the billing period.
+    const check = await auth.billing.check({ plans: [...PAID_PLAN_NAMES] });
+    for (const subscription of check.appSubscriptions) {
+      await auth.billing.cancel({ subscriptionId: subscription.id, isTest, prorate: true });
+    }
+    return redirect("/app/billing");
+  }
 
   if (plan !== "Growth" && plan !== "Pro") {
     return json({ error: "Unknown plan" }, { status: 400 });
   }
 
   // billing.request throws a redirect to Shopify's confirmation page; the
-  // merchant returns to /app/billing after approving. isTest is env-driven:
-  // test charges on dev/test shops, real charges in production (see
-  // isTestBilling / SHOPIFY_BILLING_TEST).
+  // merchant returns to /app/billing after approving. Real charges in
+  // production, test charges in development (isTestBilling /
+  // SHOPIFY_BILLING_TEST) and on development stores.
   await auth.billing.request({
     plan,
-    isTest: isTestBilling(),
+    isTest,
     returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing`,
   });
   return json({});
@@ -92,6 +106,13 @@ const PLAN_FEATURES: Record<PlanId, string[]> = {
     "14-day free trial",
   ],
 };
+
+const PLAN_ORDER: PlanId[] = ["free", "growth", "pro"];
+
+function planChangeLabel(current: PlanId, target: PlanId): string {
+  const name = PLANS[target].name;
+  return PLAN_ORDER.indexOf(target) > PLAN_ORDER.indexOf(current) ? `Upgrade to ${name}` : `Downgrade to ${name}`;
+}
 
 export default function Billing() {
   const data = useLoaderData<BillingLoaderData>();
@@ -148,16 +169,16 @@ export default function Billing() {
                         <List.Item key={feature}>{feature}</List.Item>
                       ))}
                     </List>
-                    {planId !== "free" && (
+                    {(planId !== "free" || !isCurrent) && (
                       <Form method="post">
                         <input type="hidden" name="plan" value={plan.name} />
                         <Button
-                          variant={isCurrent ? "secondary" : "primary"}
+                          variant={isCurrent || planId === "free" ? "secondary" : "primary"}
                           submit
                           disabled={isCurrent}
                           loading={navigation.state !== "idle" && navigation.formData?.get("plan") === plan.name}
                         >
-                          {isCurrent ? "Current plan" : `Upgrade to ${plan.name}`}
+                          {isCurrent ? "Current plan" : planChangeLabel(data.plan, planId)}
                         </Button>
                       </Form>
                     )}

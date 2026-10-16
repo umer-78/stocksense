@@ -29,6 +29,7 @@ export interface AdminAuthResult {
       isTest?: boolean;
       returnUrl?: string;
     }) => Promise<never>;
+    cancel: (options: { subscriptionId: string; isTest?: boolean; prorate?: boolean }) => Promise<unknown>;
   } | null;
 }
 
