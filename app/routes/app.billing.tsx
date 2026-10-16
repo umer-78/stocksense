@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Form, useLoaderData, useNavigation } from "@remix-run/react";
 import {
   Badge,
   Banner,
@@ -74,13 +74,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 const PLAN_FEATURES: Record<PlanId, string[]> = {
-  free: ["Up to 100 SKUs", "Basic forecast (velocity, stockout, reorder)", "Stocky CSV import"],
-  growth: ["Up to 2,000 SKUs", "Full forecasts with seasonality", "Purchase order builder", "Stocky CSV import", "14-day free trial"],
-  pro: ["Unlimited SKUs", "Full forecasts with seasonality", "Purchase order builder", "Stocky CSV import", "14-day free trial"],
+  free: [
+    "Up to 100 variants",
+    "Forecasts tested against your own sales: average, smoothing, trend and slow-mover methods",
+    "Days to stockout, reorder point and order quantity",
+    "Stocky CSV import, including lead times",
+  ],
+  growth: [
+    "Up to 2,000 variants",
+    "Everything in Free, plus the weekly-pattern (weekday/weekend) model",
+    "Purchase order builder with CSV export",
+    "14-day free trial",
+  ],
+  pro: [
+    "Unlimited variants",
+    "Everything in Growth",
+    "14-day free trial",
+  ],
 };
 
 export default function Billing() {
   const data = useLoaderData<BillingLoaderData>();
+  const navigation = useNavigation();
 
   if (data.missingCredentials) {
     return <MissingCredentials />;
@@ -134,12 +149,17 @@ export default function Billing() {
                       ))}
                     </List>
                     {planId !== "free" && (
-                      <form method="post">
+                      <Form method="post">
                         <input type="hidden" name="plan" value={plan.name} />
-                        <Button variant={isCurrent ? "secondary" : "primary"} submit disabled={isCurrent}>
+                        <Button
+                          variant={isCurrent ? "secondary" : "primary"}
+                          submit
+                          disabled={isCurrent}
+                          loading={navigation.state !== "idle" && navigation.formData?.get("plan") === plan.name}
+                        >
                           {isCurrent ? "Current plan" : `Upgrade to ${plan.name}`}
                         </Button>
-                      </form>
+                      </Form>
                     )}
                   </BlockStack>
                 </Card>
