@@ -8,7 +8,7 @@ Cost: **$0.** Render free web service + Supabase free Postgres. No card needed.
 | Piece | Cost | Notes |
 | --- | --- | --- |
 | Render free web service | $0 | Ephemeral disk — that's why state lives in Postgres |
-| Supabase free Postgres | $0 | Tables in their own `stocksense` schema (not exposed to Supabase's Data API) |
+| Supabase free Postgres | $0 | Tables in their own `stocksense` schema, not exposed to Supabase's Data API, with row level security on |
 | GitHub Actions keep-alive | $0 | `.github/workflows/keepalive.yml` pings `/healthz?db=1` every 10 min — no cold starts, DB never idles out |
 
 Set `DATABASE_URL` on Render to the Supabase **session pooler** URL (port
