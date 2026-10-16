@@ -87,8 +87,12 @@ export function fitAverage(series: number[]): FittedModel | null {
   return { id: "average", params: {}, forecast: flat(mean(series)), residuals };
 }
 
+/**
+ * Mean of the last 4 weeks. Fits any length (with 4 weeks or less it equals
+ * the simple average) so it is back-tested on every fold of a 60-day lookback.
+ */
 export function fitRecent(series: number[]): FittedModel | null {
-  if (series.length < RECENT_WINDOW + SEASON) {
+  if (series.length === 0) {
     return null;
   }
   const residuals: number[] = [];
@@ -313,7 +317,7 @@ export function fitCroston(series: number[]): FittedModel | null {
 
 export const MODELS: Record<ModelId, ModelSpec> = {
   average: { id: "average", label: "Simple average", minLength: 1, complexity: 0, fit: fitAverage },
-  recent: { id: "recent", label: "Recent 4-week average", minLength: RECENT_WINDOW + SEASON, complexity: 1, fit: fitRecent },
+  recent: { id: "recent", label: "Recent 4-week average", minLength: 1, complexity: 1, fit: fitRecent },
   ses: { id: "ses", label: "Exponential smoothing", minLength: 2 * SEASON, complexity: 2, fit: fitSes },
   croston: { id: "croston", label: "Intermittent-demand model (Croston)", minLength: 2 * SEASON, complexity: 2, fit: fitCroston },
   holt: { id: "holt", label: "Trend model (damped Holt)", minLength: 3 * SEASON, complexity: 3, fit: fitHolt },

@@ -32,6 +32,15 @@ function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
+function noBetterMethod(others: number, weeks: string): string {
+  if (others === 0) {
+    return `No other method had enough history to be tested on the last ${weeks}.`;
+  }
+  return others === 1
+    ? `The other method tested on the last ${weeks} of history did not predict better.`
+    : `None of the other ${others} methods tested on the last ${weeks} of history predicted better.`;
+}
+
 function pluralize(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : plural;
 }
@@ -212,7 +221,7 @@ export function generateForecast(input: ForecastInput): ForecastResult {
         info.errorPct !== null ? ` Its weekly totals were off by ${formatPercent(info.errorPct)} on average.` : "";
       if (info.spec.id === "average" || info.improvementPct === null || info.improvementPct <= 0) {
         explanation.push(
-          `Forecast method: ${info.spec.label}. None of the other ${info.scores.length - 1} methods tested on the last ${weeks} of history predicted better.${accuracy}`,
+          `Forecast method: ${info.spec.label}. ${noBetterMethod(info.scores.length - 1, weeks)}${accuracy}`,
         );
       } else {
         explanation.push(

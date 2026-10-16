@@ -70,3 +70,11 @@ describe("selectModel", () => {
     expect(selection.errorPct).toBeNull();
   });
 });
+
+describe("candidates on a default 60-day lookback", () => {
+  it("back-tests every candidate, the recent average included", () => {
+    const series = Array.from({ length: 60 }, (_, t) => 3 + (t % 7 === 0 ? 2 : 0) + (t % 3));
+    const ids = selectModel(series, { allowSeasonal: true }).scores.map((s) => s.id);
+    expect(ids).toEqual(["average", "recent", "ses", "holt", "seasonal"]);
+  });
+});
