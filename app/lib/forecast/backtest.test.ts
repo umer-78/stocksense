@@ -44,6 +44,12 @@ describe("selectModel", () => {
     expect(selection.model.forecast(7).reduce((a, b) => a + b, 0)).toBeGreaterThan(55);
   });
 
+  it("treats an item that sells every weekday as regular, so the weekly model can win", () => {
+    const weekdaysOnly = Array.from({ length: 60 }, (_, t) => (t % 7 === 0 || t % 7 === 6 ? 0 : 1));
+    expect(isIntermittent(weekdaysOnly)).toBe(false);
+    expect(selectModel(weekdaysOnly, { allowSeasonal: true }).spec.id).toBe("seasonal");
+  });
+
   it("offers Croston for intermittent demand", () => {
     const series = Array.from({ length: 56 }, (_, t) => (t % 9 === 4 ? 5 : 0));
     expect(isIntermittent(series)).toBe(true);

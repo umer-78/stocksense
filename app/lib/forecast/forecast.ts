@@ -273,7 +273,9 @@ export function generateForecast(input: ForecastInput): ForecastResult {
   }
   if (velocity > 0 && Number.isFinite(stockoutDays) && stockoutDays < leadTimeDays) {
     warnings.push(
-      `Stock is projected to run out (${formatNumber(stockoutDays)} days) before the next order arrives (${formatInteger(leadTimeDays)} days).`,
+      incoming > 0
+        ? `Stock is projected to run out (${formatNumber(stockoutDays)} days) before a new order could arrive (${formatInteger(leadTimeDays)} days). The ${formatInteger(incoming)} units already on order only help if they arrive sooner.`
+        : `Stock is projected to run out (${formatNumber(stockoutDays)} days) before the next order arrives (${formatInteger(leadTimeDays)} days).`,
     );
   }
   if (selection?.tested && selection.errorPct !== null && selection.errorPct > 0.5) {

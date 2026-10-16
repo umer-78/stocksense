@@ -57,10 +57,12 @@ export interface SelectOptions {
 /** Shortest training history a back-test fold may use. */
 export const MIN_TRAIN_DAYS = 21;
 /**
- * Average days between sales above which demand counts as intermittent
- * (Syntetos-Boylan ADI cut-off).
+ * Average days between sales above which demand counts as intermittent: the
+ * item sells on fewer than half of all days. (The classic Syntetos-Boylan
+ * cut-off of 1.32 was set for monthly buckets; on daily data it would flag a
+ * product that sells every weekday but never at weekends.)
  */
-const INTERMITTENT_ADI = 1.32;
+const INTERMITTENT_ADI = 2;
 /** A more complex model must beat a simpler one by this margin to be chosen. */
 const SIMPLICITY_MARGIN = 0.05;
 
