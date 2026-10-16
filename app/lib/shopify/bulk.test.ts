@@ -49,6 +49,12 @@ const variantLines = [
     inventoryItem: { id: "gid://shopify/InventoryItem/2", tracked: false },
   },
   {
+    id: "gid://shopify/ProductVariant/4",
+    title: "$25",
+    product: { id: "gid://shopify/Product/4", title: "Gift Card", status: "ACTIVE", isGiftCard: true },
+    inventoryItem: { id: "gid://shopify/InventoryItem/4", tracked: true },
+  },
+  {
     id: "gid://shopify/ProductVariant/3",
     title: "Draft item",
     product: { id: "gid://shopify/Product/3", title: "Draft", status: "DRAFT" },
@@ -71,7 +77,7 @@ describe("parseVariantsJsonl", () => {
     ]);
   });
 
-  it("skips untracked inventory and draft products, and handles levels before their variant", async () => {
+  it("skips untracked inventory, gift cards and draft products, and handles levels before their variant", async () => {
     const reordered = [variantLines[1], variantLines[0]];
     const variants = await parseVariantsJsonl(reordered);
     expect(variants.map((v) => v.variantId)).toEqual([V1]);
@@ -114,6 +120,22 @@ describe("parseOrdersJsonl", () => {
       window,
     );
     expect(sales).toEqual({});
+  });
+
+  it("dates a sale by processedAt, so imported historical orders land on their real day", async () => {
+    const sales = await parseOrdersJsonl(
+      [
+        { id: "gid://shopify/Order/7", processedAt: "2026-09-02T15:00:00Z", createdAt: "2026-09-29T08:00:00Z", cancelledAt: null, test: false },
+        { __parentId: "gid://shopify/Order/7", quantity: 3, currentQuantity: 3, variant: { id: V1 } },
+        { id: "gid://shopify/Order/8", processedAt: null, createdAt: "2026-09-03T15:00:00Z", cancelledAt: null, test: false },
+        { __parentId: "gid://shopify/Order/8", quantity: 1, currentQuantity: 1, variant: { id: V1 } },
+      ],
+      window,
+    );
+    expect(sales[V1]).toEqual([
+      ["2026-09-02", 3],
+      ["2026-09-03", 1],
+    ]);
   });
 
   it("resolves line items that arrive before their order", async () => {
@@ -173,8 +195,10 @@ describe("startBulkQuery", () => {
     ).rejects.toBeInstanceOf(BulkOperationBusyError);
   });
 
-  it("puts the sales window start into the orders query", () => {
-    expect(ordersBulkQuery("2026-08-17")).toContain('created_at:>=2026-08-17');
+  it("filters the orders export by processed date from the window start", () => {
+    const query = ordersBulkQuery("2026-08-17");
+    expect(query).toContain("processed_at:>=2026-08-17");
+    expect(query).toContain("processedAt");
   });
 });
 

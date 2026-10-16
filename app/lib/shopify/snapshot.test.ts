@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { GraphqlClient } from "./bulk";
-import { clearSnapshotCache, effectiveLookbackDays, loadSnapshot, salesWindow, STALE_AFTER_MS } from "./snapshot.server";
+import { clearSnapshotCache, effectiveLookbackDays, loadSnapshot, mergeLocations, salesWindow, STALE_AFTER_MS } from "./snapshot.server";
 
 type Row = Record<string, unknown> & { shop: string; updatedAt: Date };
 
@@ -178,6 +178,29 @@ describe("snapshot sync", () => {
     expect(shopify.started).toHaveLength(3);
   });
 
+  it("re-syncs a snapshot saved by an older format version", async () => {
+    const shopify = fakeShopify();
+    const options = () => ({ lookbackDays: 60, now: store.clock.now, fetchImpl: shopify.fetchImpl });
+    await loadSnapshot(shopify.client, SHOP, options());
+    shopify.finish();
+    await loadSnapshot(shopify.client, SHOP, options());
+    shopify.finish();
+    await loadSnapshot(shopify.client, SHOP, options());
+    expect(shopify.started).toHaveLength(2);
+
+    const { gzipSync, gunzipSync } = await import("node:zlib");
+    const row = store.rows.get(SHOP)!;
+    const old = JSON.parse(gunzipSync(Buffer.from(row.data as Uint8Array)).toString("utf8"));
+    row.data = gzipSync(Buffer.from(JSON.stringify({ ...old, version: 1 })));
+    row.completedAt = new Date(store.clock.now.getTime() - 1000);
+    clearSnapshotCache();
+
+    const state = await loadSnapshot(shopify.client, SHOP, options());
+    expect(state.syncing).toBe(true);
+    expect(state.snapshot?.version).toBe(1); // old data shown until the refresh lands
+    expect(shopify.started).toHaveLength(3);
+  });
+
   it("refreshes when the lookback setting changes", async () => {
     const shopify = fakeShopify();
     const run = (lookbackDays: number) => loadSnapshot(shopify.client, SHOP, { lookbackDays, now: store.clock.now, fetchImpl: shopify.fetchImpl });
@@ -237,5 +260,33 @@ describe("order window helpers", () => {
 
   it("ends the sales window yesterday so a partial day is never counted", () => {
     expect(salesWindow(new Date("2026-10-15T23:59:00Z"), 60)).toEqual({ start: "2026-08-16", end: "2026-10-14" });
+  });
+});
+
+describe("mergeLocations", () => {
+  it("adds locations that hold stock but are missing from the listing (e.g. a 3PL warehouse)", () => {
+    const merged = mergeLocations(
+      [{ id: "gid://shopify/Location/1", name: "Shop location" }],
+      [
+        {
+          variantId: V1,
+          productId: "p",
+          productTitle: "Board",
+          productCreatedAt: null,
+          variantTitle: "Default Title",
+          sku: "B",
+          price: null,
+          unitCost: null,
+          levels: [
+            { locationId: "gid://shopify/Location/1", locationName: "Shop location", onHand: 1, available: 1, committed: 0, incoming: 0 },
+            { locationId: "gid://shopify/Location/9", locationName: "Snow City Warehouse", onHand: 20, available: 20, committed: 0, incoming: 0 },
+          ],
+        },
+      ],
+    );
+    expect(merged).toEqual([
+      { id: "gid://shopify/Location/1", name: "Shop location" },
+      { id: "gid://shopify/Location/9", name: "Snow City Warehouse" },
+    ]);
   });
 });

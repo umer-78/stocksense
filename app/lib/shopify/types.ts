@@ -65,7 +65,8 @@ export interface VariantInventory {
  * stored gzipped in `ShopSnapshot.data`.
  */
 export interface StoredSnapshot {
-  version: 1;
+  /** Format version; snapshots from an older version are re-synced (see SNAPSHOT_VERSION). */
+  version: number;
   /** When the sync finished (ISO timestamp). */
   fetchedAt: string;
   /** Sales window: first and last day counted (YYYY-MM-DD). */

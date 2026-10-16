@@ -30,12 +30,18 @@ import {
   type GraphqlClient,
 } from "./bulk";
 import { fetchLocations } from "./client";
-import type { CatalogVariant, StoredSnapshot } from "./types";
+import type { CatalogVariant, LocationInfo, StoredSnapshot } from "./types";
 
 const gzipAsync = promisify(gzip);
 const gunzipAsync = promisify(gunzip);
 
 const DAY_MS = 86_400_000;
+/**
+ * Bump when the meaning of stored data changes (2: gift cards skipped, 3PL
+ * locations listed, sales dated by processedAt). Older snapshots re-sync on
+ * the next load instead of waiting out STALE_AFTER_MS.
+ */
+export const SNAPSHOT_VERSION = 2;
 export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;
 /** A running sync with no progress for this long is restarted. */
 export const STUCK_AFTER_MS = 20 * 60 * 1000;
@@ -214,10 +220,10 @@ async function advance(
 
     const sales = operation.url ? await parseOrdersJsonl(jsonlObjects(operation.url, fetchImpl), window) : {};
     const variants = row.pendingVariants ? await decode<CatalogVariant[]>(row.pendingVariants) : [];
-    const locations = await fetchLocations(client);
+    const locations = mergeLocations(await fetchLocations(client), variants);
     const now = options.now ?? new Date();
     const snapshot: StoredSnapshot = {
-      version: 1,
+      version: SNAPSHOT_VERSION,
       fetchedAt: now.toISOString(),
       windowStart: window.start,
       windowEnd: window.end,
@@ -292,6 +298,7 @@ export async function loadSnapshot(
   const needsRefresh =
     options.force ||
     !snapshot ||
+    snapshot.version !== SNAPSHOT_VERSION ||
     row?.status === "running" ||
     age > STALE_AFTER_MS ||
     (row?.lookbackDays ?? options.lookbackDays) !== options.lookbackDays;
@@ -303,6 +310,22 @@ export async function loadSnapshot(
     row = await db.shopSnapshot.findUnique({ where: { shop } });
   }
   return toState(row, snapshot);
+}
+
+/**
+ * Locations from the API plus any location that holds stock in the catalog,
+ * so the location filter never misses one the API listing left out.
+ */
+export function mergeLocations(listed: LocationInfo[], variants: CatalogVariant[]): LocationInfo[] {
+  const byId = new Map(listed.map((l) => [l.id, l]));
+  for (const variant of variants) {
+    for (const level of variant.levels) {
+      if (!byId.has(level.locationId)) {
+        byId.set(level.locationId, { id: level.locationId, name: level.locationName || "Unnamed location" });
+      }
+    }
+  }
+  return [...byId.values()];
 }
 
 /** Delete a shop's snapshot (uninstall / shop redact). */
