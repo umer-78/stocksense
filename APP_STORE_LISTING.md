@@ -74,20 +74,20 @@ inventory forecast, reorder point, stocky alternative, demand planning, purchase
 
 ## 4. Images
 
-All 1600 × 900 (16:9), browser chrome cropped, no prices, no statistics,
-no Shopify logos, with alt text.
+Ready in `app-store/`, rendered from the app's real pages and forecasting
+code on the dev store's catalog with demo sales. All 1600 × 900 (icon
+1200 × 1200), no prices, statistics or Shopify logos.
 
-**App icon:** 1200 × 1200, no text or pricing.
+| File | Use | Alt text |
+| --- | --- | --- |
+| `app-icon.png` | App icon | (none needed) |
+| `feature-image.png` | Feature media | Inventory dashboard listing which products to reorder |
+| `screenshot-1-dashboard.png` | Screenshot 1 | Inventory dashboard showing which variants to reorder |
+| `screenshot-2-variant.png` | Screenshot 2 | Variant forecast with sales history and the reasoning behind the order quantity |
+| `screenshot-3-purchase-orders.png` | Screenshot 3 | Purchase order built from suggested quantities |
+| `screenshot-4-settings.png` | Screenshot 4 | Forecast settings for lead time and safety stock |
 
-**Feature image:** the dashboard with a "Reorder now" row in focus.
-Alt: "StockSense dashboard highlighting a product that needs reordering"
-
-**Screenshots** (3–6; take them in the dev store after it has sales):
-1. Dashboard with status badges. Alt: "Inventory dashboard showing which variants to reorder"
-2. Variant page with the sales chart and explanation. Alt: "Variant forecast with sales history and the reasoning behind the order quantity"
-3. Purchase order builder. Alt: "Purchase order built from suggested quantities"
-4. Settings (lead time, safety stock, service level). Alt: "Forecast settings for lead time and safety stock"
-5. Stocky import. Alt: "Importing supplier lead times from a Stocky CSV"
+Retake them after renaming the app if any screen shows the old name.
 
 ## 5. Review instructions (paste into "Testing instructions")
 

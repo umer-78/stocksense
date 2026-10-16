@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate, useSearchParams } from "@remix-run/react";
+import { useLoaderData, useNavigate, useSearchParams } from "@remix-run/react";
 import {
   Badge,
   Banner,
@@ -11,6 +11,7 @@ import {
   IndexTable,
   InlineGrid,
   InlineStack,
+  Link,
   Page,
   Select,
   Text,
@@ -265,7 +266,7 @@ export default function Dashboard() {
           <Banner tone="warning" title={`You have ${data.skuCount.toLocaleString()} variants, above your plan's limit of ${data.limit?.toLocaleString()}`}>
             <InlineStack gap="300" blockAlign="center">
               <Text as="p">Forecasts cover the first {data.limit?.toLocaleString()} variants. Upgrade to forecast everything.</Text>
-              <Link to="/app/billing">Upgrade plan</Link>
+              <Link url="/app/billing">Upgrade plan</Link>
             </InlineStack>
           </Banner>
         )}
@@ -361,7 +362,11 @@ export default function Dashboard() {
                   <IndexTable.Row id={row.variantId} key={row.variantId} position={index}>
                     <IndexTable.Cell>
                       <BlockStack gap="050">
-                        <Link to={`/app/variants/${encodeURIComponent(row.variantId)}`}>{row.title}</Link>
+                        <Link url={`/app/variants/${encodeURIComponent(row.variantId)}`} monochrome removeUnderline dataPrimaryLink>
+                          <Text as="span" fontWeight="semibold">
+                            {row.title}
+                          </Text>
+                        </Link>
                         {row.overridden && (
                           <Text as="span" variant="bodySm" tone="subdued">
                             Custom settings
