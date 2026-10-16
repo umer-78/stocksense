@@ -59,6 +59,11 @@ describe("forecasting models", () => {
     expect(fit?.forecast(3)).toEqual([5, 5, 5]);
   });
 
+  it("recent average equals the simple average with 4 weeks or less", () => {
+    const series = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41];
+    expect(fitRecent(series)?.forecast(1)[0]).toBe(fitAverage(series)?.forecast(1)[0]);
+  });
+
   it("recent average only looks at the last 28 days", () => {
     const series = [...new Array(30).fill(1), ...new Array(28).fill(9)];
     expect(fitRecent(series)?.forecast(1)[0]).toBe(9);
@@ -109,7 +114,7 @@ describe("forecasting models", () => {
     expect(fitSes(new Array(10).fill(1))).toBeNull();
     expect(fitHolt(new Array(20).fill(1))).toBeNull();
     expect(fitSeasonal(new Array(20).fill(1))).toBeNull();
-    expect(fitRecent(new Array(30).fill(1))).toBeNull();
+    expect(fitRecent([])).toBeNull();
     expect(fitCroston(new Array(30).fill(0))).toBeNull();
   });
 });
