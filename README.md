@@ -1,9 +1,9 @@
-# StockSense
+# Forelark
 
 Inventory forecasting for Shopify — a "Stocky replacement" for merchants who
 need to know what to reorder and when, with the math shown for every number.
 
-Stocky, Shopify's native inventory app, shut down on August 31, 2026. StockSense
+Stocky, Shopify's native inventory app, shut down on August 31, 2026. Forelark
 fills part of that gap: it reads a store's real sales history from the Shopify
 Admin API, computes sales velocity per variant, projects days-to-stockout, and
 suggests reorder quantities — and explains every recommendation in plain

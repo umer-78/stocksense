@@ -1,5 +1,5 @@
 /**
- * StockSense forecasting engine — public API.
+ * Forelark forecasting engine — public API.
  *
  * Pure TypeScript, no framework dependencies. Every function sanitizes its
  * inputs and returns structured data instead of throwing on edge cases.

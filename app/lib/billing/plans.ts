@@ -1,5 +1,5 @@
 /**
- * StockSense billing plans and server-side limit enforcement.
+ * Forelark billing plans and server-side limit enforcement.
  *
  * Plan names here MUST match the `billing` config keys in
  * `app/shopify.server.ts` (that is what `billing.check()` returns as
