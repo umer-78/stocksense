@@ -7,7 +7,7 @@ import { deleteShopData } from "../lib/shop-data.server";
 /**
  * GDPR compliance webhook: shop/redact.
  *
- * Shopify asks the app to delete all data for the shop. StockSense deletes the
+ * Shopify asks the app to delete all data for the shop. Forelark deletes the
  * shop's settings, per-product overrides, inventory snapshot, Stocky imports,
  * privacy-event log and auth sessions (which hold PII such as the shop
  * owner's email and access tokens), then acknowledges with 200.

@@ -39,7 +39,7 @@ Two things I learned the hard way:
 2. If your lead time is longer than your days-to-stockout, you're already in
    trouble. Fix the lead time or the buffer, not the order size.
 
-I built a small Shopify app called StockSense that does exactly this math per
+I built a small Shopify app called Forelark that does exactly this math per
 variant and shows the numbers behind each suggestion, since maintaining this in
 a spreadsheet gets old past a few hundred SKUs. It's free up to 100 SKUs. But
 the formula above is the whole idea, and you can run it in a sheet today.

@@ -3,7 +3,7 @@ import polarisTranslations from "@shopify/polaris/locales/en.json";
 import { MISSING_CREDENTIALS_HINT } from "../lib/env";
 
 /**
- * Friendly fallback shown by every StockSense route when Shopify credentials
+ * Friendly fallback shown by every Forelark route when Shopify credentials
  * are not configured (instead of crashing at module load).
  *
  * Self-contained: wraps itself in Polaris' AppProvider because the routes that
@@ -12,7 +12,7 @@ import { MISSING_CREDENTIALS_HINT } from "../lib/env";
 export function MissingCredentials() {
   return (
     <AppProvider i18n={polarisTranslations}>
-      <Page title="StockSense">
+      <Page title="Forelark">
         <Card>
           <Banner tone="warning" title="Shopify credentials are not configured">
             <Text as="p" variant="bodyMd">

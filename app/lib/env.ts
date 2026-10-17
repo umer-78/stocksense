@@ -3,7 +3,7 @@
  *
  * The Shopify Remix template constructs `shopifyApp()` at module load time and
  * throws when `SHOPIFY_APP_URL` is missing, so routes must check for
- * credentials BEFORE importing `../shopify.server`. All StockSense routes use
+ * credentials BEFORE importing `../shopify.server`. All Forelark routes use
  * the lazy helpers in `./auth.ts` instead of importing `shopify.server`
  * directly.
  */
