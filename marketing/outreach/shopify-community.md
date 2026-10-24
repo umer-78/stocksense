@@ -27,7 +27,7 @@ plus a safety-stock buffer. It's honest math and it's free. It just doesn't
 update itself, and with hundreds of SKUs it becomes a chore.
 
 **Option 3: A forecasting app.**
-This is where I ended up building StockSense. It reads your sales history from
+This is where I ended up building Forelark. It reads your sales history from
 Shopify, computes velocity per variant, and shows days-to-stockout and a
 suggested reorder quantity. Every number is explained in plain English, so you
 can sanity-check it. It has a purchase order builder that exports a CSV, and it
@@ -39,5 +39,5 @@ and it counts stock on order without knowing when it arrives. Free plan covers 1
 start at $19/mo.
 
 If you're on a tight budget, start with options 1 or 2. If you want the
-forecasting without the spreadsheet upkeep, StockSense is worth a look. Happy
+forecasting without the spreadsheet upkeep, Forelark is worth a look. Happy
 to answer questions either way.

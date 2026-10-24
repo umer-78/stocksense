@@ -13,7 +13,7 @@ anyone who didn't ask a public question about Stocky replacements.
 Hi {{name}},
 
 I saw your post about finding a Stocky replacement after the shutdown. I'm
-building StockSense, a forecasting app for Shopify, and I thought I'd reach out
+building Forelark, a forecasting app for Shopify, and I thought I'd reach out
 directly since you're clearly in the middle of this decision.
 
 Quick honest summary of what it does:
@@ -44,7 +44,7 @@ Best,
 Hi {{name}},
 
 I saw you're building a Stocky replacement too. I'm doing the same with
-StockSense (forecasting + explainable reorder suggestions + Stocky CSV import).
+Forelark (forecasting + explainable reorder suggestions + Stocky CSV import).
 
 Since we're both early, I'd love to cross-reference each other: when a merchant
 doesn't fit our tool, point them to yours, and vice versa. No formal agreement

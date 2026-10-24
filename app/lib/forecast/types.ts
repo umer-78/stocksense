@@ -1,5 +1,5 @@
 /**
- * Shared types for the StockSense forecasting engine.
+ * Shared types for the Forelark forecasting engine.
  *
  * The engine is deliberately pure TypeScript with no I/O or framework
  * dependencies so it can be unit-tested in isolation and reused anywhere

@@ -12,10 +12,10 @@ directories below. One announcement post, reused with light edits per venue.
 
 ## Announcement draft
 
-Subject: We launched StockSense (unlisted) — a Stocky replacement for Shopify
+Subject: We launched Forelark (unlisted) — a Stocky replacement for Shopify
 
 Stocky, Shopify's native inventory app, shut down on August 31, 2026. We spent
-the last few months building StockSense, a forecasting app that fills part of
+the last few months building Forelark, a forecasting app that fills part of
 that gap, and it's now live in unlisted mode on the Shopify App Store.
 
 What it does:

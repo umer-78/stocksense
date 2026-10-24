@@ -29,7 +29,7 @@ export default function App() {
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>StockSense — inventory forecasting for Shopify</h1>
+        <h1 className={styles.heading}>Forelark — inventory forecasting for Shopify</h1>
         <p className={styles.text}>
           Sales velocity, days-to-stockout and reorder suggestions for every
           variant, with plain-English explanations behind every number.

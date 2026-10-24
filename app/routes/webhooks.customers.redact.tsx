@@ -6,7 +6,7 @@ import db from "../db.server";
 /**
  * GDPR compliance webhook: customers/redact.
  *
- * Shopify asks the app to delete all data for the given customer. StockSense
+ * Shopify asks the app to delete all data for the given customer. Forelark
  * stores no customer data, so we log the request and acknowledge with 200.
  */
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -26,7 +26,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   });
 
-  // No customer-scoped data is stored by StockSense, so there is nothing to
+  // No customer-scoped data is stored by Forelark, so there is nothing to
   // delete beyond the log entry above.
   return json({});
 };

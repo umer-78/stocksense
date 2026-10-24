@@ -2,7 +2,7 @@
 
 # Populated by `shopify app config link` (Partner Dashboard → Apps → your app).
 client_id = "9ff1c68995a15044cadb977894bad3a1"
-name = "stocksense"
+name = "Forelark"
 application_url = "https://stocksense-igb7.onrender.com"
 embedded = true
 

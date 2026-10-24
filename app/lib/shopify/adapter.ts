@@ -1,5 +1,5 @@
 /**
- * Adapter: stored snapshot -> StockSense domain types.
+ * Adapter: stored snapshot -> Forelark domain types.
  *
  * Pure functions (no I/O) so they can be unit-tested. Nothing Shopify-shaped
  * leaks past these functions into the forecasting engine.

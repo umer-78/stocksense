@@ -1,4 +1,4 @@
-# StockSense — the path to $1,000/month
+# Forelark — the path to $1,000/month
 
 One page. All funnel numbers below are **estimates** (labeled as such) — the
 only real numbers in this document are the plan prices, the SKU caps, and the
@@ -32,7 +32,7 @@ them to install and stay.
 The funnel: **unlisted installs → trial starts → paid subscribers**.
 
 Working estimate (conservative, based on typical indie-app benchmarks, not on
-StockSense data — we have none yet):
+Forelark data — we have none yet):
 
 | Stage | Rate (estimate) | Example: 100 installs |
 | --- | --- | --- |

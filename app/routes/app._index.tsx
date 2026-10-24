@@ -252,7 +252,7 @@ export default function Dashboard() {
 
   return (
     <Page>
-      <TitleBar title="StockSense dashboard" />
+      <TitleBar title="Forelark dashboard" />
       <BlockStack gap="500">
         {data.error && (
           <Banner tone="critical" title="Could not load inventory">
