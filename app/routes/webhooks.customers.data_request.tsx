@@ -10,7 +10,7 @@ import db from "../db.server";
  * ROOT of the response body (not wrapped in a `data` key) and a 200 status.
  * The payload's `customer` object carries the identifying fields (id, email,
  * phone); the `orders` array should hold the order data the app stores for
- * that customer. StockSense stores no customer or order data, so we echo the
+ * that customer. Forelark stores no customer or order data, so we echo the
  * identifying fields Shopify sent us plus an empty orders array, and log the
  * request.
  */
@@ -35,7 +35,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   return json({
     customer,
-    // StockSense does not store order data beyond what Shopify already has.
+    // Forelark does not store order data beyond what Shopify already has.
     orders: [],
   });
 };

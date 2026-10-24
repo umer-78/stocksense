@@ -7,7 +7,7 @@
  * Bulk operations run the same query server-side with no cost limit and
  * produce a JSONL file (one object per line; nested connection items carry a
  * `__parentId`). This module holds the queries, the streaming downloader, and
- * pure parsers that turn JSONL objects into StockSense types.
+ * pure parsers that turn JSONL objects into Forelark types.
  */
 import type { CatalogVariant, InventoryLevelInfo } from "./types";
 

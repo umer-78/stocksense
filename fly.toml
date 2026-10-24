@@ -1,4 +1,4 @@
-# Fly.io config for StockSense — optional alternative host.
+# Fly.io config for Forelark — optional alternative host.
 #
 # Honest cost (2026): Fly.io removed its free tier for new customers (Oct 2024)
 # and requires a credit card. A minimal app like this bills ~$2-3/mo

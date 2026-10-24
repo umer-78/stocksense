@@ -1,18 +1,19 @@
 # Shopify App Store submission kit
 
-Everything to paste into Partner Dashboard → Apps → StockSense → Distribution →
+Everything to paste into Partner Dashboard → Apps → your app → Distribution →
 Shopify App Store → Create listing. Limits follow Shopify's App Store
 requirements: no statistics, guarantees, "best/first/only" claims, and no
 pricing outside the Pricing section (images and icon included).
 
 ## 1. Before you submit
 
-- [ ] **Pick a new name.** "StockSense" is taken: at least two inventory
-      apps already use it (apps.shopify.com/stocksense-5 and /stocksense-7).
-      The name must be unique and lead with a distinctive brand word
-      (requirement 4.1.2). "Restock Radar" and "Stockcast" are taken too.
-      Search apps.shopify.com for your pick, then set it in
-      `shopify.app.toml` (`name`), the listing, and the app's UI text.
+- [ ] **Name: Forelark.** "StockSense" was taken by other inventory apps
+      (apps.shopify.com/stocksense-5 and /stocksense-7), as were StockLark,
+      Stockwren, Reorda, Restock Radar and Stockcast. No app or product
+      named Forelark turned up (checked 17 Oct 2026). Search
+      apps.shopify.com once more right before submitting. The app's UI,
+      website and `shopify.app.toml` already use it; run
+      `shopify app deploy` so the Partner Dashboard picks up the new name.
 - [ ] **Hosting:** Render's free plan restarts the app on deploys and limits
       hours. Reviewers reject apps that error or time out. The keepalive
       workflow helps; the paid Starter plan removes the risk.
@@ -32,13 +33,13 @@ pricing outside the Pricing section (images and icon included).
 ## 2. Listing text
 
 **App name** (30 max)
-StockSense
+Forelark
 
 **App introduction** (100 max)
 > Know what to reorder and when. Forecasts tested on your own sales help you avoid stockouts.
 
 **App details** (500 max)
-> StockSense forecasts demand for every product variant from your Shopify
+> Forelark forecasts demand for every product variant from your Shopify
 > order history. Several forecasting methods are tested against your own
 > recent sales, and the one that predicted best is used, so steady sellers,
 > weekly patterns and slow movers each get a fitting forecast. You see days

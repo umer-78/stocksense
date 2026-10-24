@@ -1,6 +1,6 @@
-# StockSense — Deployment Runbook
+# Forelark — Deployment Runbook
 
-Copy-paste steps to take StockSense from this repo to a live app on the Shopify
+Copy-paste steps to take Forelark from this repo to a live app on the Shopify
 App Store. Steps marked ⚠️ need your accounts.
 
 Cost: **$0.** Render free web service + Supabase free Postgres. No card needed.
@@ -27,7 +27,7 @@ boot. Fly.io (step 9) is optional now — only if you outgrow the free tiers.
 ## Step 2 — Create the app + configure scopes, webhooks, and legal URLs ⚠️ (your account)
 
 1. In the Partner Dashboard: **Apps → Create app → Create app manually**.
-   Name it `StockSense`.
+   Name it `Forelark`.
 2. **App setup → Access scopes** — add exactly these (must match
    `shopify.app.toml` → `[access_scopes]` and the `SCOPES` env var):
 

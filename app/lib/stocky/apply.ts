@@ -1,7 +1,7 @@
 /**
  * Turn a stored Stocky "Variants" export into per-variant lead times.
  *
- * Stocky kept a supplier lead time per variant; StockSense matches those rows
+ * Stocky kept a supplier lead time per variant; Forelark matches those rows
  * to the live catalog by SKU (case- and whitespace-insensitive). Pure, so it
  * is testable; the route does the database writes.
  */

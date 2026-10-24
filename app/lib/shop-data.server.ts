@@ -1,5 +1,5 @@
 /**
- * Delete everything StockSense stores for a shop. Used on uninstall and on
+ * Delete everything Forelark stores for a shop. Used on uninstall and on
  * Shopify's shop/redact request, as the privacy policy promises.
  */
 import db from "../db.server";

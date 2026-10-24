@@ -1,4 +1,4 @@
-# StockSense — Shopify App Store listing draft
+# Forelark — Shopify App Store listing draft
 
 > Status: draft for the Partner Dashboard listing form (DEPLOY.md step 8).
 > Every claim below was cross-checked against the codebase — see the
@@ -8,7 +8,7 @@
 
 ## 1. App name + tagline
 
-**App name:** StockSense
+**App name:** Forelark
 (10 characters — under the 40-char limit; does not contain "Shopify", per App Store policy.)
 
 **Tagline (one line):**
@@ -26,9 +26,9 @@ Reorder before you run out — every forecast shows its math.
 
 ## 3. Long description (Shopify field cap: ≤ 5,000 chars; keep scannable)
 
-Stocky, Shopify's native inventory app, shut down on August 31, 2026. StockSense helps you reorder before you run out — without black-box forecasts.
+Stocky, Shopify's native inventory app, shut down on August 31, 2026. Forelark helps you reorder before you run out — without black-box forecasts.
 
-**Know when you'll run out.** StockSense reads your real sales history from Shopify and tests several forecasting methods on each variant's own sales (average, smoothing, trend, weekly pattern, slow-seller), then uses the one that predicted best to project days-to-stockout from sellable stock — so you see what's critical today, not next week.
+**Know when you'll run out.** Forelark reads your real sales history from Shopify and tests several forecasting methods on each variant's own sales (average, smoothing, trend, weekly pattern, slow-seller), then uses the one that predicted best to project days-to-stockout from sellable stock — so you see what's critical today, not next week.
 
 **Every recommendation shows its math.** No 'trust us' forecasts. Each variant gets the plain-English breakdown: sales, the forecast method chosen and how accurate it was in testing, lead-time demand, safety stock, reorder point, suggested order quantity — every number explained in a sentence. Thin-data forecasts are flagged honestly.
 
@@ -45,7 +45,7 @@ Stocky, Shopify's native inventory app, shut down on August 31, 2026. StockSense
 - **Growth ($19/mo)** — up to 2,000 SKUs, adds the weekly-pattern forecast model and the purchase order builder. 14-day free trial.
 - **Pro ($49/mo)** — unlimited SKUs, everything in Growth. 14-day free trial.
 
-**What StockSense does not do (yet):** it does not place or email orders (CSV export only); it does not manage suppliers or receiving; it counts stock on order but does not know when it will arrive; and it only reads your inventory, never writes.
+**What Forelark does not do (yet):** it does not place or email orders (CSV export only); it does not manage suppliers or receiving; it counts stock on order but does not know when it will arrive; and it only reads your inventory, never writes.
 
 **Privacy by design.** Stores no customer data and implements Shopify's GDPR webhooks for data requests, customer redaction, and shop redaction.
 
@@ -100,7 +100,7 @@ The contact email shown on both pages is `umerhashmi987@gmail.com` (`app/lib/con
 
 **GDPR / privacy compliance.**
 All three mandated compliance webhooks are implemented and registered in `shopify.app.toml` (API version 2026-07):
-- `customers/data_request` — responds with the customer's identifying fields at the root of the JSON body plus an empty `orders` array (StockSense stores no customer or order data), and logs the event.
+- `customers/data_request` — responds with the customer's identifying fields at the root of the JSON body plus an empty `orders` array (Forelark stores no customer or order data), and logs the event.
 - `customers/redact` — acknowledges; no customer-scoped data is stored.
 - `shop/redact` — deletes the shop's settings, Stocky imports, privacy-event log, and auth sessions in one transaction.
 
