@@ -49,7 +49,7 @@ English.
   Shopify auth helpers in `app/lib/auth.ts`
 - **Shopify App Remix** (`@shopify/shopify-app-remix`) — OAuth, Admin API
   GraphQL, billing, webhooks; API version `2026-07`
-- **Polaris** (`@shopify/polaris` v12) — UI components
+- **Polaris** (`@shopify/polaris` v13) — UI components
 - **Prisma + Postgres** (Supabase free tier) — sessions, per-shop settings, Stocky imports, privacy
   event log (`prisma/schema.prisma`)
 - **Forecast engine** (`app/lib/forecast/`) — pure TypeScript, no framework
