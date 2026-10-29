@@ -39,9 +39,14 @@ export function classifyStatus(
  * suggestion (order qty 0), the item is "low": it needs watching, not ordering.
  */
 export function forecastStatus(
-  forecast: { daysToStockout: number; suggestedOrderQty: number },
+  forecast: { daysToStockout: number; suggestedOrderQty: number; onHand?: number; incoming?: number },
   leadTimeDays: number,
 ): StockStatus {
+  // Out of stock with nothing on order is always urgent, even when there is no
+  // sales history to forecast from (velocity 0 would otherwise read as "ok").
+  if (forecast.onHand !== undefined && forecast.onHand <= 0 && !((forecast.incoming ?? 0) > 0)) {
+    return "critical";
+  }
   const status = classifyStatus(forecast.daysToStockout, leadTimeDays);
   return status === "critical" && forecast.suggestedOrderQty === 0 ? "low" : status;
 }
