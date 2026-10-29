@@ -1,7 +1,8 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 
+import { MARKETING_SITE_URL } from "../../lib/config";
 import { hasShopifyCredentials } from "../../lib/env";
 
 import styles from "./styles.module.css";
@@ -13,18 +14,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     throw redirect(`/app?${url.searchParams.toString()}`);
   }
 
-  // Guard BEFORE importing ../../shopify.server: shopifyApp() throws at module
-  // load when SHOPIFY_APP_URL is missing.
+  // Local setup without credentials: explain what is missing.
   if (!hasShopifyCredentials()) {
-    return { showForm: false, missingCredentials: true };
+    return { missingCredentials: true };
   }
-  const { login } = await import("../../shopify.server");
 
-  return { showForm: Boolean(login), missingCredentials: false };
+  // Merchants open Forelark from the Shopify admin (with ?shop=). Anyone else
+  // goes to the marketing site; no shop-domain login form (requirement 2.3.1).
+  throw redirect(MARKETING_SITE_URL);
 };
 
 export default function App() {
-  const { showForm, missingCredentials } = useLoaderData<typeof loader>();
+  const { missingCredentials } = useLoaderData<typeof loader>();
 
   return (
     <div className={styles.index}>
@@ -40,18 +41,6 @@ export default function App() {
             SHOPIFY_API_SECRET, SHOPIFY_APP_URL and SCOPES in your .env file
             (see .env.example), then restart the dev server.
           </p>
-        )}
-        {showForm && (
-          <Form className={styles.form} method="post" action="/auth/login">
-            <label className={styles.label}>
-              <span>Shop domain</span>
-              <input className={styles.input} type="text" name="shop" />
-              <span>e.g: my-shop-domain.myshopify.com</span>
-            </label>
-            <button className={styles.button} type="submit">
-              Log in
-            </button>
-          </Form>
         )}
         <ul className={styles.list}>
           <li>
