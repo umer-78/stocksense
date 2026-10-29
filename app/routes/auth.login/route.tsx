@@ -13,11 +13,19 @@ import {
 import polarisTranslations from "@shopify/polaris/locales/en.json";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 
+import { redirect } from "@remix-run/node";
+
+import { MARKETING_SITE_URL } from "../../lib/config";
 import { loginErrorMessage } from "./error.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  // Logins start from Shopify (with ?shop=). Without it, send visitors to the
+  // marketing site instead of asking for a shop domain (requirement 2.3.1).
+  if (!new URL(request.url).searchParams.get("shop")) {
+    throw redirect(MARKETING_SITE_URL);
+  }
   // Lazy import: shopifyApp() throws at module load when SHOPIFY_APP_URL is
   // missing, and the server bundle executes every route module at boot.
   const { login } = await import("../../shopify.server");

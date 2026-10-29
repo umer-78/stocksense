@@ -21,5 +21,13 @@ export const TERMS_OF_SERVICE_URL = baseUrl
   ? `${baseUrl}/terms.html`
   : "/terms.html";
 
+/**
+ * Public marketing site. Visitors who open the app URL directly (not from the
+ * Shopify admin) are sent here: App Store requirement 2.3.1 forbids asking
+ * merchants to type their myshopify.com domain, so the app shows no login form.
+ */
+export const MARKETING_SITE_URL =
+  process.env.MARKETING_SITE_URL || "https://umer-78.github.io/stocksense/";
+
 /** Contact email shown in the privacy policy / terms pages. */
 export const CONTACT_EMAIL = "umerhashmi987@gmail.com";
