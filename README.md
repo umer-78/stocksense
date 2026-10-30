@@ -36,6 +36,15 @@ English.
   or copy), receive in full or per line, cancel or delete drafts, CSV export.
   Open orders count as incoming stock in every forecast
   (`app/lib/purchase-orders.ts`, `planning.ts`).
+- **Late orders.** Each sent order is expected one supplier lead time after it
+  was sent. Orders past that date are flagged on the purchase-order list, and
+  the order page drafts a follow-up email to the supplier with how late it is
+  and how much has arrived (`app/lib/purchase-orders.ts`).
+- **Reports.** ABC analysis (the products earning the first 80% of revenue,
+  the next 15% and the rest), dead stock (in stock with no sales in the sales
+  window, valued at cost) and overstock (more than three times the cover
+  target, with the excess units and their cost), each with a CSV download
+  (`app/lib/reports.ts`, `app/routes/app.reports.tsx`).
 - **Low-stock alerts.** The `inventory_levels/update` webhook re-checks the
   variant; when it turns "Reorder now" Forelark logs an alert (at most once a
   day per variant) and fires the Shopify Flow trigger "Item needs reordering"
