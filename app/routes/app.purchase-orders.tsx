@@ -71,7 +71,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (!canUseFeature(context.plan, "poBuilder")) {
       return json<PoLoaderData>({ missingCredentials: false, blocked: true, ...EMPTY, plan: context.plan });
     }
-    const [suppliers, orders] = await Promise.all([listSuppliers(context.shop), listPurchaseOrders(context.shop)]);
+    const [suppliers, orders] = await Promise.all([listSuppliers(context.shop), listPurchaseOrders(context.shop, context.settings.defaultLeadTime)]);
     const snapshot = context.sync.snapshot;
     if (!snapshot) {
       return json<PoLoaderData>({ missingCredentials: false, ...EMPTY, sync: syncInfo(context.sync), plan: context.plan, suppliers, orders });
@@ -163,6 +163,7 @@ const STATUS_TONE: Record<PoStatus, "info" | "attention" | "success" | "critical
 
 export default function PurchaseOrders() {
   const data = useLoaderData<PoLoaderData>();
+  const lateOrders = data.orders.filter((po) => po.overdueDays > 0).sort((a, b) => b.overdueDays - a.overdueDays);
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -424,8 +425,16 @@ export default function PurchaseOrders() {
                 Saved purchase orders
               </Text>
               <Text as="p" tone="subdued">
-                Units on sent orders count as on the way in every forecast until you mark them received.
+                Units on sent orders count as on the way in every forecast until you mark them received. An order is late once its supplier's lead time has
+                passed since it was sent.
               </Text>
+              {lateOrders.length > 0 && (
+                <Banner tone="warning" title={`${lateOrders.length} order${lateOrders.length === 1 ? " is" : "s are"} late`}>
+                  <Text as="p">
+                    {lateOrders.map((po) => `${poLabel(po.number)} (${po.overdueDays} d)`).join(", ")}. Open an order to send the supplier a follow-up.
+                  </Text>
+                </Banner>
+              )}
             </BlockStack>
           </Box>
           {data.orders.length === 0 ? (
@@ -434,19 +443,21 @@ export default function PurchaseOrders() {
             </Box>
           ) : (
             <DataTable
-              columnContentTypes={["text", "text", "text", "numeric", "numeric", "text"]}
-              headings={["Order", "Supplier", "Status", "Units received", "Cost", "Created"]}
+              columnContentTypes={["text", "text", "text", "numeric", "numeric", "text", "text"]}
+              headings={["Order", "Supplier", "Status", "Units received", "Cost", "Created", "Expected"]}
               rows={data.orders.map((po) => [
                 <Link key={`po-${po.id}`} to={`/app/purchase-orders/${po.id}`}>
                   {poLabel(po.number)}
                 </Link>,
                 po.supplierName ?? "—",
-                <Badge key={`st-${po.id}`} tone={STATUS_TONE[po.status]}>
-                  {PO_STATUS_LABEL[po.status]}
-                </Badge>,
+                <InlineStack key={`st-${po.id}`} gap="100" wrap={false}>
+                  <Badge tone={STATUS_TONE[po.status]}>{PO_STATUS_LABEL[po.status]}</Badge>
+                  {po.overdueDays > 0 && <Badge tone="critical">{`${po.overdueDays} d late`}</Badge>}
+                </InlineStack>,
                 `${po.receivedUnits} / ${po.units}`,
                 po.missingCost ? `${po.cost.toFixed(2)}+` : po.cost.toFixed(2),
                 po.createdAt.slice(0, 10),
+                (po.status === "sent" || po.status === "partial") && po.expectedAt ? po.expectedAt.slice(0, 10) : "—",
               ])}
             />
           )}
