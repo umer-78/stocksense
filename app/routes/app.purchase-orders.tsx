@@ -1,6 +1,6 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { Form, Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import {
   Badge,
   Banner,
@@ -12,6 +12,7 @@ import {
   DataTable,
   InlineStack,
   Page,
+  Select,
   Text,
   TextField,
 } from "@shopify/polaris";
@@ -22,16 +23,23 @@ import { MissingCredentials } from "../components/MissingCredentials";
 import { SyncStatus } from "../components/SyncStatus";
 import { authenticateAdmin } from "../lib/auth";
 import { PLANS, canUseFeature } from "../lib/billing/plans";
-import { getForecastContext, isAuthed, syncInfo } from "../lib/context.server";
+import { currentPlan, getForecastContext, isAuthed, syncInfo } from "../lib/context.server";
 import { buildRows } from "../lib/dashboard";
+import { vendorKey } from "../lib/planning";
+import { getPlanningInputs } from "../lib/planning.server";
 import { toCsv, type PoLine } from "../lib/purchase-order";
+import { PO_STATUS_LABEL, poLabel, sanitizeLines, type PoStatus } from "../lib/purchase-orders";
+import { createPurchaseOrder, listPurchaseOrders, type PoSummary } from "../lib/purchase-orders.server";
 import { getVariantOverrides } from "../lib/settings.server";
+import type { SupplierRecord } from "../lib/suppliers";
+import { listSuppliers } from "../lib/suppliers.server";
 import type { SyncInfo } from "../lib/sync-info";
 
 const MAX_ROWS = 500;
 
 interface PoRow extends PoLine {
   variantId: string;
+  vendor: string;
   status: "critical" | "low" | "ok";
   available: number;
   incoming: number;
@@ -46,40 +54,49 @@ interface PoLoaderData {
   sync: SyncInfo | null;
   plan: string;
   rows: PoRow[];
+  suppliers: SupplierRecord[];
+  orders: PoSummary[];
 }
+
+const EMPTY = { sync: null, plan: "free", rows: [], suppliers: [], orders: [] };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const auth = await authenticateAdmin(request);
   if (!isAuthed(auth)) {
-    return json<PoLoaderData>({ missingCredentials: true, sync: null, plan: "free", rows: [] });
+    return json<PoLoaderData>({ missingCredentials: true, ...EMPTY });
   }
 
   try {
     const context = await getForecastContext(auth);
     if (!canUseFeature(context.plan, "poBuilder")) {
-      return json<PoLoaderData>({ missingCredentials: false, blocked: true, sync: null, plan: context.plan, rows: [] });
+      return json<PoLoaderData>({ missingCredentials: false, blocked: true, ...EMPTY, plan: context.plan });
     }
+    const [suppliers, orders] = await Promise.all([listSuppliers(context.shop), listPurchaseOrders(context.shop)]);
     const snapshot = context.sync.snapshot;
     if (!snapshot) {
-      return json<PoLoaderData>({ missingCredentials: false, sync: syncInfo(context.sync), plan: context.plan, rows: [] });
+      return json<PoLoaderData>({ missingCredentials: false, ...EMPTY, sync: syncInfo(context.sync), plan: context.plan, suppliers, orders });
     }
-    const overrides = await getVariantOverrides(context.shop);
+    const [overrides, planning] = await Promise.all([getVariantOverrides(context.shop), getPlanningInputs(context.shop)]);
     const locationId = context.settings.locationId && snapshot.locations.some((l) => l.id === context.settings.locationId) ? context.settings.locationId : null;
     const { rows } = buildRows(snapshot, context.settings, overrides, {
       allowSeasonal: canUseFeature(context.plan, "seasonality"),
       locationId,
       limit: PLANS[context.plan].skuLimit,
+      planning,
     });
 
     return json<PoLoaderData>({
       missingCredentials: false,
       sync: syncInfo(context.sync),
       plan: context.plan,
+      suppliers,
+      orders,
       rows: rows
         .filter((row) => row.suggestedOrderQty > 0)
         .slice(0, MAX_ROWS)
         .map((row) => ({
           variantId: row.variant.variantId,
+          vendor: row.variant.vendor ?? "",
           sku: row.variant.sku,
           productTitle: row.variant.productTitle,
           variantTitle: row.variant.variantTitle,
@@ -96,23 +113,73 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     console.error("[stocksense] PO builder loader failed", error);
     return json<PoLoaderData>({
       missingCredentials: false,
+      ...EMPTY,
       error: error instanceof Error ? error.message : "Failed to load variants",
-      sync: null,
-      plan: "free",
-      rows: [],
     });
   }
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const auth = await authenticateAdmin(request);
+  if (!isAuthed(auth)) {
+    return json({ error: "Not signed in" }, { status: 401 });
+  }
+  if (!canUseFeature(await currentPlan(auth), "poBuilder")) {
+    return json({ error: "Purchase orders need the Growth or Pro plan." }, { status: 403 });
+  }
+  const shop = auth.session.shop;
+  const form = await request.formData();
+  let parsed: unknown = [];
+  try {
+    parsed = JSON.parse(String(form.get("lines") ?? "[]"));
+  } catch {
+    parsed = [];
+  }
+  const lines = sanitizeLines(parsed);
+  if (lines.length === 0) {
+    return json({ error: "Select at least one variant with a quantity above 0." }, { status: 400 });
+  }
+  const supplierRaw = Number(form.get("supplierId"));
+  const note = String(form.get("note") ?? "").trim().slice(0, 1000) || null;
+  const id = await createPurchaseOrder(shop, {
+    supplierId: Number.isInteger(supplierRaw) && supplierRaw > 0 ? supplierRaw : null,
+    note,
+    lines,
+  });
+  return redirect(`/app/purchase-orders/${id}`);
 };
 
 function displayTitle(row: { productTitle: string; variantTitle: string }): string {
   return row.variantTitle && row.variantTitle !== "Default Title" ? `${row.productTitle} — ${row.variantTitle}` : row.productTitle;
 }
 
+const STATUS_TONE: Record<PoStatus, "info" | "attention" | "success" | "critical" | undefined> = {
+  draft: undefined,
+  sent: "info",
+  partial: "attention",
+  received: "success",
+  cancelled: "critical",
+};
+
 export default function PurchaseOrders() {
   const data = useLoaderData<PoLoaderData>();
+  const actionData = useActionData<{ error?: string }>();
+  const navigation = useNavigation();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [copied, setCopied] = useState(false);
+  const [supplierId, setSupplierId] = useState("");
+  const [onlySupplier, setOnlySupplier] = useState(false);
+  const [note, setNote] = useState("");
+
+  const supplier = data.suppliers.find((s) => String(s.id) === supplierId) ?? null;
+  const visibleRows = useMemo(
+    () =>
+      onlySupplier && supplier?.vendor
+        ? data.rows.filter((row) => vendorKey(row.vendor) === vendorKey(supplier.vendor))
+        : data.rows,
+    [data.rows, onlySupplier, supplier],
+  );
 
   const selectedRows = useMemo(
     () =>
@@ -132,7 +199,7 @@ export default function PurchaseOrders() {
     return (
       <Page>
         <TitleBar title="Purchase orders" />
-        <Banner tone="warning" title="The purchase order builder is a Growth or Pro feature">
+        <Banner tone="warning" title="Purchase orders are a Growth or Pro feature">
           <InlineStack gap="300" blockAlign="center">
             <Text as="p">Upgrade to Growth ($19/mo) or Pro ($49/mo) to turn forecasts into purchase orders.</Text>
             <Button url="/app/billing" variant="primary">
@@ -145,6 +212,11 @@ export default function PurchaseOrders() {
   }
 
   const csv = toCsv(selectedRows);
+  const linesJson = JSON.stringify(
+    selectedRows
+      .filter((row) => row.qty > 0)
+      .map((row) => ({ variantId: row.variantId, sku: row.sku, title: displayTitle(row), qty: row.qty, unitCost: row.unitCost })),
+  );
   const toggle = (variantId: string, checked: boolean) => {
     const next = new Set(selected);
     if (checked) next.add(variantId);
@@ -157,7 +229,7 @@ export default function PurchaseOrders() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `stocksense-po-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `forelark-po-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -178,13 +250,23 @@ export default function PurchaseOrders() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const supplierOptions = [
+    { label: "No supplier", value: "" },
+    ...data.suppliers.map((s) => ({ label: s.vendor ? `${s.name} (${s.vendor})` : s.name, value: String(s.id) })),
+  ];
+
   return (
     <Page>
-      <TitleBar title="Purchase order builder" />
+      <TitleBar title="Purchase orders" />
       <BlockStack gap="500">
         {data.error && (
           <Banner tone="critical" title="Could not load variants">
             <Text as="p">{data.error}</Text>
+          </Banner>
+        )}
+        {actionData?.error && (
+          <Banner tone="critical" title="The purchase order was not saved">
+            <Text as="p">{actionData.error}</Text>
           </Banner>
         )}
         {data.sync && <SyncStatus info={data.sync} />}
@@ -192,24 +274,39 @@ export default function PurchaseOrders() {
         {data.sync?.hasData && (
           <Card padding="0">
             <Box padding="400" borderBlockEndWidth="025" borderColor="border">
-              <InlineStack align="space-between" blockAlign="center" gap="300" wrap>
-                <Text as="p">
-                  {data.rows.length} {data.rows.length === 1 ? "variant is" : "variants are"} below target stock. Quantities start at the forecast suggestion.
-                </Text>
-                <InlineStack gap="200">
-                  <Button size="slim" onClick={() => setSelected(new Set(data.rows.filter((r) => r.status === "critical").map((r) => r.variantId)))}>
-                    Select "reorder now"
-                  </Button>
-                  <Button size="slim" onClick={() => setSelected(new Set(data.rows.map((r) => r.variantId)))}>
-                    Select all
-                  </Button>
-                  <Button size="slim" onClick={() => setSelected(new Set())} disabled={selected.size === 0}>
-                    Clear
-                  </Button>
+              <BlockStack gap="300">
+                <InlineStack align="space-between" blockAlign="center" gap="300" wrap>
+                  <Text as="p">
+                    {visibleRows.length} {visibleRows.length === 1 ? "variant is" : "variants are"} below target stock. Quantities start at the forecast suggestion.
+                  </Text>
+                  <InlineStack gap="200">
+                    <Button size="slim" onClick={() => setSelected(new Set(visibleRows.filter((r) => r.status === "critical").map((r) => r.variantId)))}>
+                      Select &quot;reorder now&quot;
+                    </Button>
+                    <Button size="slim" onClick={() => setSelected(new Set(visibleRows.map((r) => r.variantId)))}>
+                      Select all
+                    </Button>
+                    <Button size="slim" onClick={() => setSelected(new Set())} disabled={selected.size === 0}>
+                      Clear
+                    </Button>
+                  </InlineStack>
                 </InlineStack>
-              </InlineStack>
+                {data.suppliers.length > 0 && (
+                  <InlineStack gap="400" blockAlign="end" wrap>
+                    <Box minWidth="240px">
+                      <Select label="Supplier" options={supplierOptions} value={supplierId} onChange={setSupplierId} />
+                    </Box>
+                    <Checkbox
+                      label="Only this supplier's products"
+                      checked={onlySupplier}
+                      onChange={setOnlySupplier}
+                      disabled={!supplier?.vendor}
+                    />
+                  </InlineStack>
+                )}
+              </BlockStack>
             </Box>
-            {data.rows.length === 0 ? (
+            {visibleRows.length === 0 ? (
               <Box padding="400">
                 <Text as="p">Every variant is at or above its target stock.</Text>
               </Box>
@@ -217,7 +314,7 @@ export default function PurchaseOrders() {
               <DataTable
                 columnContentTypes={["text", "text", "text", "numeric", "numeric", "numeric", "numeric"]}
                 headings={["", "Product", "Status", "Available", "Days left", "Suggested", "Order qty"]}
-                rows={data.rows.map((row) => [
+                rows={visibleRows.map((row) => [
                   <Checkbox
                     key={`check-${row.variantId}`}
                     label={`Select ${displayTitle(row)}`}
@@ -228,7 +325,7 @@ export default function PurchaseOrders() {
                   <BlockStack key={`title-${row.variantId}`} gap="050">
                     <Text as="span">{displayTitle(row)}</Text>
                     <Text as="span" variant="bodySm" tone="subdued">
-                      {row.sku || "No SKU"}
+                      {[row.sku || "No SKU", row.vendor].filter(Boolean).join(" · ")}
                     </Text>
                   </BlockStack>,
                   <Badge key={`status-${row.variantId}`} tone={row.status === "critical" ? "critical" : row.status === "low" ? "warning" : "success"}>
@@ -261,7 +358,7 @@ export default function PurchaseOrders() {
           <Card>
             <BlockStack gap="300">
               <Text as="h2" variant="headingMd">
-                Purchase order
+                New purchase order
               </Text>
               {selectedRows.length === 0 ? (
                 <Text as="p" tone="subdued">
@@ -287,17 +384,73 @@ export default function PurchaseOrders() {
                       Some variants have no unit cost in Shopify, so the total leaves them out. Add costs under Products → Variant → Cost per item.
                     </Text>
                   )}
-                  <InlineStack gap="300" blockAlign="center">
-                    <Button variant="primary" onClick={downloadCsv}>
-                      Download CSV
-                    </Button>
-                    <Button onClick={copyCsv}>{copied ? "Copied" : "Copy CSV"}</Button>
-                  </InlineStack>
+                  <Form method="post">
+                    <input type="hidden" name="lines" value={linesJson} />
+                    <input type="hidden" name="supplierId" value={supplierId} />
+                    <BlockStack gap="300">
+                      <TextField
+                        label="Note for the supplier (optional)"
+                        name="note"
+                        value={note}
+                        onChange={setNote}
+                        multiline={2}
+                        maxLength={1000}
+                        autoComplete="off"
+                      />
+                      <InlineStack gap="300" blockAlign="center">
+                        <Button submit variant="primary" loading={navigation.state === "submitting"}>
+                          {supplier ? `Save purchase order for ${supplier.name}` : "Save purchase order"}
+                        </Button>
+                        <Button onClick={downloadCsv}>Download CSV</Button>
+                        <Button onClick={copyCsv}>{copied ? "Copied" : "Copy CSV"}</Button>
+                      </InlineStack>
+                      {data.suppliers.length === 0 && (
+                        <Text as="p" variant="bodySm" tone="subdued">
+                          <Link to="/app/suppliers">Add your suppliers</Link> to send orders by email and use their lead times.
+                        </Text>
+                      )}
+                    </BlockStack>
+                  </Form>
                 </>
               )}
             </BlockStack>
           </Card>
         )}
+
+        <Card padding="0">
+          <Box padding="400">
+            <BlockStack gap="100">
+              <Text as="h2" variant="headingMd">
+                Saved purchase orders
+              </Text>
+              <Text as="p" tone="subdued">
+                Units on sent orders count as on the way in every forecast until you mark them received.
+              </Text>
+            </BlockStack>
+          </Box>
+          {data.orders.length === 0 ? (
+            <Box padding="400" paddingBlockStart="0">
+              <Text as="p">No purchase orders yet.</Text>
+            </Box>
+          ) : (
+            <DataTable
+              columnContentTypes={["text", "text", "text", "numeric", "numeric", "text"]}
+              headings={["Order", "Supplier", "Status", "Units received", "Cost", "Created"]}
+              rows={data.orders.map((po) => [
+                <Link key={`po-${po.id}`} to={`/app/purchase-orders/${po.id}`}>
+                  {poLabel(po.number)}
+                </Link>,
+                po.supplierName ?? "—",
+                <Badge key={`st-${po.id}`} tone={STATUS_TONE[po.status]}>
+                  {PO_STATUS_LABEL[po.status]}
+                </Badge>,
+                `${po.receivedUnits} / ${po.units}`,
+                po.missingCost ? `${po.cost.toFixed(2)}+` : po.cost.toFixed(2),
+                po.createdAt.slice(0, 10),
+              ])}
+            />
+          )}
+        </Card>
       </BlockStack>
     </Page>
   );

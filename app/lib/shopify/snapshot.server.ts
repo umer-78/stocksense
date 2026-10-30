@@ -42,7 +42,7 @@ const DAY_MS = 86_400_000;
  * development stores). Older snapshots re-sync on the next load instead of
  * waiting out STALE_AFTER_MS.
  */
-export const SNAPSHOT_VERSION = 3;
+export const SNAPSHOT_VERSION = 4;
 export const STALE_AFTER_MS = 6 * 60 * 60 * 1000;
 /** A running sync with no progress for this long is restarted. */
 export const STUCK_AFTER_MS = 20 * 60 * 1000;
@@ -112,6 +112,15 @@ async function readSnapshot(shop: string, row: { data: Uint8Array | null; comple
 }
 
 /** Test helper. */
+/**
+ * The last complete snapshot, read from the database only (no Shopify calls).
+ * For webhooks and the AI-assistant endpoint, which have no admin session.
+ */
+export async function getStoredSnapshot(shop: string): Promise<StoredSnapshot | null> {
+  const row = await db.shopSnapshot.findUnique({ where: { shop }, select: { data: true, completedAt: true } });
+  return row ? readSnapshot(shop, row) : null;
+}
+
 export function clearSnapshotCache(): void {
   decoded.clear();
 }

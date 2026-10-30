@@ -6,6 +6,7 @@
 import { generateForecast } from "./forecast";
 import type { ForecastResult, SalesRecord } from "./forecast";
 import { resolveSettings, type ForecastSettings, type VariantOverride } from "./settings";
+import { EMPTY_PLANNING, withPlanning, type PlanningInputs } from "./planning";
 import { inventoryForLocation, salesFor } from "./shopify/adapter";
 import type { StoredSnapshot, VariantInventory } from "./shopify/types";
 
@@ -74,6 +75,8 @@ export interface RowOptions {
   /** Last full day of sales (snapshot window end). Enables model selection. */
   asOf?: string;
   override?: VariantOverride | null;
+  /** Lead time from the supplier that covers this product's vendor. */
+  supplierLeadTime?: number | null;
 }
 
 /** Run the forecast for one variant. Shared by the dashboard, PO builder and detail page. */
@@ -83,7 +86,7 @@ export function forecastVariant(
   settings: ForecastSettings,
   options: RowOptions,
 ): { forecast: ForecastResult; leadTime: number; overridden: boolean } {
-  const effective = resolveSettings(settings, options.override);
+  const effective = resolveSettings(settings, options.override, options.supplierLeadTime);
   const forecast = generateForecast({
     salesHistory,
     // Sellable stock: on-hand units already committed to open orders are sold.
@@ -132,17 +135,20 @@ export function buildRows(
   snapshot: StoredSnapshot,
   settings: ForecastSettings,
   overrides: Map<string, VariantOverride>,
-  options: { allowSeasonal: boolean; locationId: string | null; limit?: number | null },
+  options: { allowSeasonal: boolean; locationId: string | null; limit?: number | null; planning?: PlanningInputs },
 ): { rows: DashboardRow[]; variantCount: number } {
   const inventory = inventoryForLocation(snapshot, options.locationId);
   const visible = options.limit != null ? inventory.slice(0, options.limit) : inventory;
-  const rows = visible.map((variant) =>
-    buildDashboardRow(variant, salesFor(snapshot, variant.variantId), settings, {
+  const planning = options.planning ?? EMPTY_PLANNING;
+  const rows = visible.map((base) => {
+    const { variant, supplierLeadTime } = withPlanning(base, planning);
+    return buildDashboardRow(variant, salesFor(snapshot, variant.variantId), settings, {
       allowSeasonal: options.allowSeasonal,
       asOf: snapshot.windowEnd,
       override: overrides.get(variant.variantId),
-    }),
-  );
+      supplierLeadTime,
+    });
+  });
   return { rows: sortByUrgency(rows), variantCount: inventory.length };
 }
 
