@@ -123,7 +123,7 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 
 **Honesty notes for reviewers.**
 - The app does not write inventory and does not place orders. "Send to supplier" opens the merchant's own email (or copies the text / downloads a CSV); the app sends no email itself. Receiving updates the purchase order only.
-- AI-assistant access is read-only: the `/mcp` endpoint exposes four read tools, authenticated with a per-shop key stored as a SHA-256 hash.
+- AI-assistant access is read-only: the `/mcp` endpoint exposes four read tools, authenticated with a per-shop key stored only as an scrypt hash.
 - Stocky import is best-effort reference data (parsed and stored, previewed before confirm); it does not create supplier records or purchase orders automatically.
 - Forecasting claims are limited to what the code does: classical statistical models fitted and back-tested per variant in the app (`app/lib/forecast/models.ts`, `backtest.ts`); no external AI service and no promises of exact accuracy.
 
