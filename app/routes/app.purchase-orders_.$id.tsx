@@ -23,8 +23,9 @@ import { authenticateAdmin } from "../lib/auth";
 import { canUseFeature } from "../lib/billing/plans";
 import { currentPlan, isAuthed } from "../lib/context.server";
 import { toCsv } from "../lib/purchase-order";
-import { PO_STATUS_LABEL, mailtoUrl, poEmail, poLabel, type PoStatus } from "../lib/purchase-orders";
+import { PO_STATUS_LABEL, followUpEmail, mailtoUrl, poEmail, poLabel, type PoStatus } from "../lib/purchase-orders";
 import { cancel, deleteDraft, getPurchaseOrder, markSent, receive, type PoDetail } from "../lib/purchase-orders.server";
+import { getShopSettings } from "../lib/settings.server";
 
 interface LoaderData {
   missingCredentials: boolean;
@@ -42,7 +43,8 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     return json<LoaderData>({ missingCredentials: false, blocked: true, po: null, shopName: "" });
   }
   const id = Number(params.id);
-  const po = Number.isInteger(id) ? await getPurchaseOrder(auth.session.shop, id) : null;
+  const settings = await getShopSettings(auth.session.shop);
+  const po = Number.isInteger(id) ? await getPurchaseOrder(auth.session.shop, id, settings.defaultLeadTime) : null;
   if (!po) {
     throw new Response("Purchase order not found", { status: 404 });
   }
@@ -144,6 +146,7 @@ export default function PurchaseOrderDetail() {
   const mailto = mailtoUrl(po.supplier?.email ?? null, email.subject, email.body);
   const open = po.status === "sent" || po.status === "partial";
   const canReceive = open || po.status === "received";
+  const chase = po.overdueDays > 0 ? followUpEmail(po, po.supplier?.name ?? null, data.shopName, po.overdueDays) : null;
 
   const csv = toCsv(po.lines.map((line) => ({ sku: line.sku, productTitle: line.title, variantTitle: "", qty: line.qty, unitCost: line.unitCost })));
   const downloadCsv = () => {
@@ -175,6 +178,23 @@ export default function PurchaseOrderDetail() {
     <Page backAction={{ content: "Purchase orders", url: "/app/purchase-orders" }} title={label} titleMetadata={<Badge tone={STATUS_TONE[po.status]}>{PO_STATUS_LABEL[po.status]}</Badge>}>
       <TitleBar title={label} />
       <Layout>
+        {chase && (
+          <Layout.Section>
+            <Banner tone="warning" title={`${po.overdueDays === 1 ? "1 day" : `${po.overdueDays} days`} overdue`}>
+              <BlockStack gap="200">
+                <Text as="p">
+                  Expected by {po.expectedAt?.slice(0, 10)} ({po.leadTimeDays}-day lead time after it was sent){po.receivedUnits > 0 ? `; ${po.receivedUnits} of ${po.units} units have arrived` : ""}. Ask the supplier
+                  for a delivery date, or update the supplier's lead time if this is normal for them.
+                </Text>
+                <InlineStack gap="200">
+                  <Button url={mailtoUrl(po.supplier?.email ?? null, chase.subject, chase.body)} target="_blank">
+                    {po.supplier?.email ? `Follow up with ${po.supplier.email}` : "Write a follow-up email"}
+                  </Button>
+                </InlineStack>
+              </BlockStack>
+            </Banner>
+          </Layout.Section>
+        )}
         <Layout.Section>
           <Card padding="0">
             <Form method="post">
@@ -239,7 +259,8 @@ export default function PurchaseOrderDetail() {
                 </Text>
                 <Text as="p" tone="subdued">
                   {po.units} units ordered, {po.receivedUnits} received. Created {po.createdAt.slice(0, 10)}
-                  {po.sentAt ? `, sent ${po.sentAt.slice(0, 10)}` : ""}.
+                  {po.sentAt ? `, sent ${po.sentAt.slice(0, 10)}` : ""}
+                  {open && po.expectedAt ? `, expected by ${po.expectedAt.slice(0, 10)}` : ""}.
                 </Text>
                 {po.note && <Text as="p">{po.note}</Text>}
                 <InlineStack gap="200" wrap>

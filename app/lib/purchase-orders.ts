@@ -1,5 +1,6 @@
 /**
- * Saved purchase orders: statuses, receiving and the supplier email.
+ * Saved purchase orders: statuses, receiving, the supplier email and
+ * following up on orders that are late.
  * Pure functions so the rules are unit-testable; persistence lives in
  * `purchase-orders.server.ts`.
  */
@@ -159,4 +160,57 @@ export function mailtoUrl(to: string | null, subject: string, body: string): str
       ? `${body.slice(0, MAILTO_BODY_LIMIT)}\n\n[Order shortened: attach the CSV for the full list.]`
       : body;
   return `mailto:${encodeURIComponent(to ?? "")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(shortBody)}`;
+}
+
+const DAY_MS = 86_400_000;
+
+/** When a sent order should arrive: the day it was sent plus the supplier's lead time. */
+export function expectedArrival(sentAt: string | Date | null, leadTimeDays: number): Date | null {
+  if (!sentAt) {
+    return null;
+  }
+  const sent = new Date(sentAt);
+  if (Number.isNaN(sent.getTime())) {
+    return null;
+  }
+  return new Date(sent.getTime() + Math.max(0, leadTimeDays) * DAY_MS);
+}
+
+/** Whole days an open order is past its expected arrival (0 when on time, not sent, received or cancelled). */
+export function daysOverdue(status: PoStatus, expectedAt: Date | null, now: Date): number {
+  if (!expectedAt || (status !== "sent" && status !== "partial")) {
+    return 0;
+  }
+  return Math.max(0, Math.floor((now.getTime() - expectedAt.getTime()) / DAY_MS));
+}
+
+export interface PoForFollowUp {
+  number: number;
+  sentAt: string | null;
+  units: number;
+  receivedUnits: number;
+}
+
+/** A short note asking the supplier when a late order will arrive. */
+export function followUpEmail(
+  po: PoForFollowUp,
+  supplierName: string | null,
+  shopName: string,
+  overdueDays: number,
+): { subject: string; body: string } {
+  const label = poLabel(po.number);
+  const sent = po.sentAt ? ` sent on ${po.sentAt.slice(0, 10)}` : "";
+  const due = overdueDays === 1 ? "It was due yesterday" : `It was due ${overdueDays} days ago`;
+  const progress = po.receivedUnits > 0 ? `, and ${po.receivedUnits} of ${po.units} units have arrived so far` : "";
+  const body = [
+    supplierName ? `Hello ${supplierName},` : "Hello,",
+    "",
+    `We're following up on purchase order ${label}${sent}. ${due}${progress}.`,
+    "",
+    "Could you let us know when we can expect delivery?",
+    "",
+    "Thank you,",
+    shopName,
+  ].join("\n");
+  return { subject: `Following up: purchase order ${label} from ${shopName}`, body };
 }
