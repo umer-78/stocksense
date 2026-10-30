@@ -56,11 +56,13 @@ describe("MCP server", () => {
 });
 
 describe("API keys", () => {
-  it("generates prefixed keys and stores only a hash", () => {
+  it("generates prefixed keys and stores only a hash", async () => {
     const key = generateApiKey();
     expect(key.startsWith("flk_")).toBe(true);
-    expect(hashApiKey(key)).toMatch(/^[0-9a-f]{64}$/);
-    expect(hashApiKey(key)).not.toContain(key);
+    const hash = await hashApiKey(key);
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(hash).not.toContain(key);
+    expect(await hashApiKey(key)).toBe(hash);
     expect(keyHint(key)).toBe(`${key.slice(0, 8)}…`);
   });
 
