@@ -4,6 +4,8 @@ import { Prisma } from "@prisma/client";
 import db from "../db.server";
 import {
   applyReceipt,
+  daysOverdue,
+  expectedArrival,
   isPoStatus,
   poTotals,
   statusAfterReceiving,
@@ -23,6 +25,12 @@ export interface PoSummary {
   receivedUnits: number;
   cost: number;
   missingCost: boolean;
+  /** When a sent order should arrive (sent date + supplier lead time). */
+  expectedAt: string | null;
+  /** Days past that date while still open; 0 when on time. */
+  overdueDays: number;
+  /** Lead time used for the expected date, and where it came from. */
+  leadTimeDays: number;
 }
 
 export interface PoDetail extends PoSummary {
@@ -34,12 +42,15 @@ export interface PoDetail extends PoSummary {
 
 type PoRow = Prisma.PurchaseOrderGetPayload<{ include: { lines: true; supplier: true } }>;
 
-function toSummary(row: PoRow): PoSummary {
+function toSummary(row: PoRow, defaultLeadTime: number, now: Date): PoSummary {
   const totals = poTotals(row.lines);
+  const status = isPoStatus(row.status) ? row.status : "draft";
+  const leadTimeDays = row.supplier?.leadTimeDays ?? defaultLeadTime;
+  const expected = expectedArrival(row.sentAt, leadTimeDays);
   return {
     id: row.id,
     number: row.number,
-    status: isPoStatus(row.status) ? row.status : "draft",
+    status,
     supplierName: row.supplier?.name ?? null,
     createdAt: row.createdAt.toISOString(),
     sentAt: row.sentAt?.toISOString() ?? null,
@@ -48,20 +59,23 @@ function toSummary(row: PoRow): PoSummary {
     receivedUnits: row.lines.reduce((sum, line) => sum + line.receivedQty, 0),
     cost: totals.cost,
     missingCost: totals.missingCost,
+    expectedAt: expected?.toISOString() ?? null,
+    overdueDays: daysOverdue(status, expected, now),
+    leadTimeDays,
   };
 }
 
-export async function listPurchaseOrders(shop: string, take = 50): Promise<PoSummary[]> {
+export async function listPurchaseOrders(shop: string, defaultLeadTime: number, take = 50, now = new Date()): Promise<PoSummary[]> {
   const rows = await db.purchaseOrder.findMany({
     where: { shop },
     orderBy: { number: "desc" },
     take,
     include: { lines: true, supplier: true },
   });
-  return rows.map(toSummary);
+  return rows.map((row) => toSummary(row, defaultLeadTime, now));
 }
 
-export async function getPurchaseOrder(shop: string, id: number): Promise<PoDetail | null> {
+export async function getPurchaseOrder(shop: string, id: number, defaultLeadTime: number, now = new Date()): Promise<PoDetail | null> {
   const row = await db.purchaseOrder.findFirst({
     where: { shop, id },
     include: { lines: { orderBy: { id: "asc" } }, supplier: true },
@@ -70,7 +84,7 @@ export async function getPurchaseOrder(shop: string, id: number): Promise<PoDeta
     return null;
   }
   return {
-    ...toSummary(row),
+    ...toSummary(row, defaultLeadTime, now),
     note: row.note,
     closedAt: row.closedAt?.toISOString() ?? null,
     supplier: row.supplier ? { id: row.supplier.id, name: row.supplier.name, email: row.supplier.email } : null,
