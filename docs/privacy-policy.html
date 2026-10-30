@@ -27,7 +27,7 @@
   <body>
     <nav><a href="./">&larr; Forelark home</a></nav>
     <h1>Forelark Privacy Policy</h1>
-    <p class="muted">Last updated: October 16, 2026</p>
+    <p class="muted">Last updated: October 30, 2026</p>
 
     <p>
       Forelark is an inventory forecasting app for Shopify merchants. This
@@ -51,6 +51,13 @@
       and purchase-order summaries. We do not sell, rent, or share your data
       with third parties for marketing purposes.
     </p>
+    <p>
+      If you create an AI-assistant key and connect an assistant such as
+      Claude, that assistant can read your forecasts and purchase orders
+      through Forelark using the key. What the assistant does with that
+      information is governed by its provider's terms. You can revoke the key
+      at any time.
+    </p>
 
     <h2>Data storage</h2>
     <p>
@@ -64,6 +71,10 @@
         and the number of units of each variant sold per day. It holds no
         order details, no customer information and no payment data.</li>
       <li>Any Stocky CSV files you import.</li>
+      <li>Supplier records you enter (name, email, lead time, notes), your
+        purchase orders, and a log of low-stock alerts.</li>
+      <li>If you create an AI-assistant key, only a one-way hash of it, so
+        the key itself cannot be read back.</li>
     </ul>
     <p>
       Orders are read through Shopify's bulk export only to count units sold
@@ -74,7 +85,8 @@
     <p>
       When you uninstall Forelark, or when Shopify sends a
       <em>shop/redact</em> request, we delete the store's settings, overrides,
-      inventory snapshot and imported files. You can request a copy of your
+      inventory snapshot, suppliers, purchase orders, alerts, AI-assistant key
+      and imported files. You can request a copy of your
       data at any time using the contact details below.
     </p>
 

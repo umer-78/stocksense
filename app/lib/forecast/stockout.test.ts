@@ -14,6 +14,10 @@ describe("daysToStockout", () => {
     expect(daysToStockout(8.2, 0)).toBe(0);
   });
 
+  it("returns 0 when on-hand is zero even with no sales", () => {
+    expect(daysToStockout(0, 0)).toBe(0);
+  });
+
   it("clamps negative inputs", () => {
     expect(daysToStockout(-5, 10)).toBe(Number.POSITIVE_INFINITY); // velocity clamped to 0
     expect(daysToStockout(5, -10)).toBe(0); // on-hand clamped to 0

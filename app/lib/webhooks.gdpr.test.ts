@@ -15,6 +15,11 @@ const mocks = vi.hoisted(() => ({
   sessionDeleteMany: vi.fn(),
   variantSettingsDeleteMany: vi.fn(),
   shopSnapshotDeleteMany: vi.fn(),
+  purchaseOrderDeleteMany: vi.fn(),
+  supplierDeleteMany: vi.fn(),
+  stockAlertDeleteMany: vi.fn(),
+  apiKeyDeleteMany: vi.fn(),
+  shopPlanDeleteMany: vi.fn(),
   webhook: vi.fn(),
 }));
 
@@ -38,6 +43,11 @@ vi.mock("../db.server", () => ({
     session: { deleteMany: mocks.sessionDeleteMany },
     variantSettings: { deleteMany: mocks.variantSettingsDeleteMany },
     shopSnapshot: { deleteMany: mocks.shopSnapshotDeleteMany },
+    purchaseOrder: { deleteMany: mocks.purchaseOrderDeleteMany },
+    supplier: { deleteMany: mocks.supplierDeleteMany },
+    stockAlert: { deleteMany: mocks.stockAlertDeleteMany },
+    apiKey: { deleteMany: mocks.apiKeyDeleteMany },
+    shopPlan: { deleteMany: mocks.shopPlanDeleteMany },
   },
 }));
 
@@ -164,6 +174,11 @@ describe("webhooks.shop.redact", () => {
     mocks.sessionDeleteMany.mockReturnValue("session-delete");
     mocks.variantSettingsDeleteMany.mockReturnValue("variantSettings-delete");
     mocks.shopSnapshotDeleteMany.mockReturnValue("shopSnapshot-delete");
+    mocks.purchaseOrderDeleteMany.mockReturnValue("purchaseOrder-delete");
+    mocks.supplierDeleteMany.mockReturnValue("supplier-delete");
+    mocks.stockAlertDeleteMany.mockReturnValue("stockAlert-delete");
+    mocks.apiKeyDeleteMany.mockReturnValue("apiKey-delete");
+    mocks.shopPlanDeleteMany.mockReturnValue("shopPlan-delete");
   });
 
   it("deletes every per-shop table in one transaction", async () => {
@@ -186,6 +201,11 @@ describe("webhooks.shop.redact", () => {
       "variantSettings-delete",
       "shopSnapshot-delete",
       "stockyImport-delete",
+      "purchaseOrder-delete",
+      "supplier-delete",
+      "stockAlert-delete",
+      "apiKey-delete",
+      "shopPlan-delete",
       "privacyEvent-delete",
       "session-delete",
     ]);
@@ -195,6 +215,11 @@ describe("webhooks.shop.redact", () => {
     expect(mocks.stockyImportDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
     expect(mocks.privacyEventDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
     expect(mocks.sessionDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
+    expect(mocks.purchaseOrderDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
+    expect(mocks.supplierDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
+    expect(mocks.stockAlertDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
+    expect(mocks.apiKeyDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
+    expect(mocks.shopPlanDeleteMany).toHaveBeenCalledWith({ where: { shop: SHOP } });
   });
 
   it("acknowledges with 200 when credentials are missing", async () => {
@@ -222,10 +247,15 @@ describe("webhooks.app.uninstalled", () => {
     mocks.sessionDeleteMany.mockReturnValue("session-delete");
     mocks.variantSettingsDeleteMany.mockReturnValue("variantSettings-delete");
     mocks.shopSnapshotDeleteMany.mockReturnValue("shopSnapshot-delete");
+    mocks.purchaseOrderDeleteMany.mockReturnValue("purchaseOrder-delete");
+    mocks.supplierDeleteMany.mockReturnValue("supplier-delete");
+    mocks.stockAlertDeleteMany.mockReturnValue("stockAlert-delete");
+    mocks.apiKeyDeleteMany.mockReturnValue("apiKey-delete");
+    mocks.shopPlanDeleteMany.mockReturnValue("shopPlan-delete");
     mocks.transaction.mockResolvedValue([]);
   });
 
-  it("deletes the shop's settings, overrides, snapshot, imports and sessions, keeping the privacy log", async () => {
+  it("deletes the shop's settings, overrides, snapshot, imports, suppliers, purchase orders, alerts, API key and sessions, keeping the privacy log", async () => {
     mocks.webhook.mockResolvedValue({ shop: SHOP, topic: "APP_UNINSTALLED", session: null });
 
     const response = await uninstalledAction(
@@ -238,6 +268,11 @@ describe("webhooks.app.uninstalled", () => {
       "variantSettings-delete",
       "shopSnapshot-delete",
       "stockyImport-delete",
+      "purchaseOrder-delete",
+      "supplier-delete",
+      "stockAlert-delete",
+      "apiKey-delete",
+      "shopPlan-delete",
       "session-delete",
     ]);
     expect(mocks.privacyEventDeleteMany).not.toHaveBeenCalled();

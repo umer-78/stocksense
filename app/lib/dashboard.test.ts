@@ -63,6 +63,11 @@ describe("forecastStatus", () => {
     expect(forecastStatus({ daysToStockout: 3, suggestedOrderQty: 0 }, 14)).toBe("low");
     expect(forecastStatus({ daysToStockout: 100, suggestedOrderQty: 0 }, 14)).toBe("ok");
   });
+
+  it("is critical when out of stock with nothing on order, even with no sales", () => {
+    expect(forecastStatus({ daysToStockout: 0, suggestedOrderQty: 0, onHand: 0, incoming: 0 }, 14)).toBe("critical");
+    expect(forecastStatus({ daysToStockout: 0, suggestedOrderQty: 0, onHand: 0, incoming: 5 }, 14)).toBe("low");
+  });
 });
 
 describe("sortByUrgency", () => {

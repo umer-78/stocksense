@@ -5,6 +5,7 @@
 import type { AdminAuthResult } from "./auth";
 import { PAID_PLAN_NAMES, planFromSubscription, type PlanId } from "./billing/plans";
 import type { ForecastSettings } from "./settings";
+import { rememberPlan } from "./plan-cache.server";
 import { getShopSettings } from "./settings.server";
 import { effectiveLookbackDays, loadSnapshot, type SnapshotState } from "./shopify/snapshot.server";
 import type { SyncInfo } from "./sync-info";
@@ -40,6 +41,7 @@ export interface ForecastContext {
 export async function getForecastContext(auth: AuthedContext, options: { force?: boolean } = {}): Promise<ForecastContext> {
   const shop = auth.session.shop;
   const [plan, settings] = await Promise.all([currentPlan(auth), getShopSettings(shop)]);
+  await rememberPlan(shop, plan);
   const lookbackDays = effectiveLookbackDays(settings.lookbackDays, auth.session.scope);
   const sync = await loadSnapshot(auth.admin, shop, { lookbackDays, force: options.force });
   return {

@@ -52,7 +52,7 @@
       "mainEntity": [
         { "@type": "Question", "name": "Can I still export my data from Stocky?", "acceptedAnswer": { "@type": "Answer", "text": "Stocky was discontinued in August 2026, so new exports may no longer be possible. If you saved the Stocky - Variants.csv and Stocky - Purchase Orders.csv exports before the shutdown, keep them: they are your purchase-order history and a record of your supplier lead times." } },
         { "@type": "Question", "name": "Do I need my Stocky data to start forecasting again?", "acceptedAnswer": { "@type": "Answer", "text": "No. Forelark forecasts from your Shopify order history and current inventory, which Shopify still holds. The Stocky exports are useful reference history, not a requirement." } },
-        { "@type": "Question", "name": "Does Forelark manage suppliers like Stocky did?", "acceptedAnswer": { "@type": "Answer", "text": "No. Forelark focuses on forecasting and reorder quantities. Its purchase-order builder exports a CSV you send to your supplier yourself. Keep supplier details in a spreadsheet or a dedicated inventory-management app." } }
+        { "@type": "Question", "name": "Does Forelark manage suppliers like Stocky did?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, the essentials. Each supplier has an email, a lead time and notes, and is linked to your Shopify product vendors. Purchase orders are saved in the app, sent to the supplier from your own email or as a CSV, and received in full or line by line. Receiving is recorded in Forelark; update your stock in Shopify as usual." } }
       ]
     }
   ]
@@ -155,9 +155,9 @@
       <thead><tr><th scope="col">Job Stocky did</th><th scope="col">Where it can go now</th></tr></thead>
       <tbody>
         <tr><th scope="row">Forecasting and reorder suggestions</th><td>An inventory forecasting app such as Forelark, which shows days to stockout, reorder point and suggested quantity per variant.</td></tr>
-        <tr><th scope="row">Building purchase orders</th><td>Forelark's purchase-order builder exports a CSV you send to your supplier. Or a spreadsheet.</td></tr>
-        <tr><th scope="row">Supplier records</th><td>A spreadsheet, or a full inventory-management app if you have many suppliers.</td></tr>
-        <tr><th scope="row">Receiving, adjustments, transfers, stocktakes</th><td>Shopify admin's own inventory tools, or a full inventory-management app.</td></tr>
+        <tr><th scope="row">Building purchase orders</th><td>Forelark turns its reorder list into a purchase order, sends it to your supplier from your own email or as a CSV, and tracks what arrived. Or a spreadsheet.</td></tr>
+        <tr><th scope="row">Supplier records</th><td>Forelark keeps each supplier's email, lead time and notes. A full inventory-management app if you need more.</td></tr>
+        <tr><th scope="row">Receiving, adjustments, transfers, stocktakes</th><td>Receiving against a purchase order is tracked in Forelark. Stock changes, adjustments, transfers and stocktakes stay in Shopify admin's own inventory tools, or a full inventory-management app.</td></tr>
       </tbody>
     </table>
     </div>
@@ -166,6 +166,7 @@
     <ol>
       <li><strong>Install the app and pick a location.</strong> Forecast all locations combined or a single one; you can switch at any time.</li>
       <li><strong>Enter the settings from step 2.</strong> Defaults are a 14-day lead time, 20% safety stock, 30 days of cover and a 60-day sales lookback, so it works before you change anything.</li>
+      <li><strong>Add your suppliers</strong> (Growth and Pro). Forelark lists your product vendors so each becomes a supplier in one click; give each its lead time.</li>
       <li><strong>Import your Stocky CSVs</strong> (optional). Both files are accepted and stored as reference history.</li>
       <li><strong>Check the dashboard.</strong> Variants are ranked critical (will run out before a new order could arrive), low (within twice your lead time) or healthy.</li>
     </ol>
@@ -174,8 +175,8 @@
     <ol>
       <li>Open the dashboard and start with the critical items.</li>
       <li>Read the explanation on any number that surprises you. Each one shows the sales, lead time and buffer behind it.</li>
-      <li>Add what needs ordering to the purchase-order builder, adjust quantities, and export the CSV.</li>
-      <li>Send it to your supplier. Nothing is ordered automatically.</li>
+      <li>Turn what needs ordering into a purchase order, adjust quantities, and save it.</li>
+      <li>Send it to your supplier, then mark items received when they arrive. Nothing is ordered automatically.</li>
     </ol>
     <p>Want to sanity-check the math first? Run your own numbers through the free <a href="reorder-point-calculator.html">reorder point calculator</a>. It uses the app's reorder formulas with a simple average; the app itself picks the best-tested forecast for each product.</p>
 
@@ -187,8 +188,8 @@
         <tr><th scope="row">Status</th><td>Discontinued August 2026</td><td>Early access, in App Store review</td></tr>
         <tr><th scope="row">Reorder suggestions</th><td>Yes</td><td>Yes, with the arithmetic shown for each number</td></tr>
         <tr><th scope="row">Forecast method</th><td>&mdash;</td><td>Several methods tested on each product's own sales; the most accurate is used</td></tr>
-        <tr><th scope="row">Purchase orders</th><td>Created and tracked in app</td><td>Built in app, exported as CSV</td></tr>
-        <tr><th scope="row">Suppliers and receiving</th><td>Yes</td><td>No</td></tr>
+        <tr><th scope="row">Purchase orders</th><td>Created and tracked in app</td><td>Built in app, sent to the supplier, received, exported as CSV</td></tr>
+        <tr><th scope="row">Suppliers and receiving</th><td>Yes</td><td>Yes; receiving is recorded on the purchase order, stock is updated in Shopify</td></tr>
         <tr><th scope="row">Writes to your inventory</th><td>Yes</td><td>No, read-only</td></tr>
         <tr><th scope="row">Imports Stocky exports</th><td>&mdash;</td><td>Yes</td></tr>
         <tr><th scope="row">Price</th><td>Was free with POS Pro</td><td>Free up to 100 variants; $19 or $49 per month above that</td></tr>
@@ -202,7 +203,7 @@
     <h3>Do I need my Stocky data to start forecasting again?</h3>
     <p>No. Forecasts come from your Shopify order history and current inventory.</p>
     <h3>Does Forelark manage suppliers like Stocky did?</h3>
-    <p>No. It focuses on forecasting and reorder quantities, and exports purchase orders as CSV. Keep supplier details in a spreadsheet or a dedicated inventory-management app.</p>
+    <p>Yes, the essentials. Each supplier has an email, a lead time and notes, and is linked to your Shopify product vendors. Purchase orders are saved in the app, sent to the supplier from your own email or as a CSV, and received in full or line by line. Receiving is recorded in Forelark; update your stock in Shopify as usual.</p>
     <h3>Will it change my stock levels?</h3>
     <p>No. Forelark only reads inventory and orders. It never writes to Shopify.</p>
   </article>

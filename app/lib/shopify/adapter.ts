@@ -39,6 +39,7 @@ export function inventoryAt(variant: CatalogVariant, locationId: string | null):
     locationId: locationId ?? null,
     locationName: locationId ? (levels[0]?.locationName ?? null) : "All locations",
     productCreatedAt: variant.productCreatedAt,
+    vendor: variant.vendor ?? "",
   };
 }
 

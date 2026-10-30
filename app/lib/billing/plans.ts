@@ -6,15 +6,16 @@
  * `appSubscriptions[].name`).
  *
  *   Free   — no subscription, up to 100 SKUs, basic forecast (no seasonality)
- *   Growth — $19/mo, up to 2,000 SKUs, full forecasts + PO builder
- *   Pro    — $49/mo, unlimited SKUs, all features
+ *   Growth — $19/mo, up to 2,000 SKUs, full forecasts, suppliers, purchase
+ *            orders and low-stock alerts
+ *   Pro    — $49/mo, unlimited SKUs, all of Growth plus AI-assistant access
  *
  * All functions are pure so the enforcement logic is unit-testable.
  */
 
 export type PlanId = "free" | "growth" | "pro";
 
-export type PlanFeature = "seasonality" | "poBuilder" | "stockyImport";
+export type PlanFeature = "seasonality" | "poBuilder" | "stockyImport" | "alerts" | "aiAccess";
 
 export interface PlanDefinition {
   id: PlanId;
@@ -33,7 +34,7 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
     name: "Free",
     priceMonthly: null,
     skuLimit: 100,
-    features: { seasonality: false, poBuilder: false, stockyImport: true },
+    features: { seasonality: false, poBuilder: false, stockyImport: true, alerts: false, aiAccess: false },
     trialDays: 0,
   },
   growth: {
@@ -41,7 +42,7 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
     name: "Growth",
     priceMonthly: 19,
     skuLimit: 2000,
-    features: { seasonality: true, poBuilder: true, stockyImport: true },
+    features: { seasonality: true, poBuilder: true, stockyImport: true, alerts: true, aiAccess: false },
     trialDays: 14,
   },
   pro: {
@@ -49,7 +50,7 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
     name: "Pro",
     priceMonthly: 49,
     skuLimit: null,
-    features: { seasonality: true, poBuilder: true, stockyImport: true },
+    features: { seasonality: true, poBuilder: true, stockyImport: true, alerts: true, aiAccess: true },
     trialDays: 14,
   },
 };

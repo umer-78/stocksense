@@ -103,3 +103,88 @@ model PrivacyEvent {
   payload   String
   createdAt DateTime @default(now())
 }
+
+/// Suppliers. Products whose Shopify vendor matches `vendor` use `leadTimeDays`
+/// unless the variant has its own lead time.
+model Supplier {
+  id             Int             @id @default(autoincrement())
+  shop           String
+  name           String
+  vendor         String?
+  email          String?
+  leadTimeDays   Int?
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  purchaseOrders PurchaseOrder[]
+
+  @@index([shop])
+}
+
+/// Purchase orders saved from the builder. status: draft | sent | partial | received | cancelled.
+/// Unreceived units on sent/partial orders count as stock on the way.
+model PurchaseOrder {
+  id         Int                 @id @default(autoincrement())
+  shop       String
+  /// Per-shop sequence shown as PO-0001.
+  number     Int
+  supplierId Int?
+  supplier   Supplier?           @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  status     String              @default("draft")
+  note       String?
+  createdAt  DateTime            @default(now())
+  sentAt     DateTime?
+  closedAt   DateTime?
+  updatedAt  DateTime            @updatedAt
+  lines      PurchaseOrderLine[]
+
+  @@unique([shop, number])
+  @@index([shop, status])
+}
+
+model PurchaseOrderLine {
+  id          Int           @id @default(autoincrement())
+  poId        Int
+  po          PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  variantId   String
+  sku         String
+  title       String
+  qty         Int
+  receivedQty Int           @default(0)
+  unitCost    Float?
+
+  @@index([poId])
+}
+
+/// Low-stock alerts raised from inventory webhooks (also sent to Shopify Flow).
+model StockAlert {
+  id                Int      @id @default(autoincrement())
+  shop              String
+  variantId         String
+  productTitle      String
+  variantTitle      String
+  sku               String
+  available         Int
+  daysToStockout    Float?
+  suggestedOrderQty Int
+  flowSent          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  @@index([shop, variantId, createdAt])
+}
+
+/// The plan last seen for a shop, for webhooks and the AI endpoint (no billing context there).
+model ShopPlan {
+  shop      String   @id
+  plan      String   @default("free")
+  updatedAt DateTime @updatedAt
+}
+
+/// AI-assistant (MCP) API key. Only the SHA-256 hash is stored.
+model ApiKey {
+  shop       String    @id
+  keyHash    String    @unique
+  hint       String
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+}

@@ -53,7 +53,9 @@ Forelark
 - Days until stockout, reorder point and order quantity per variant
 - Per-location stock, including third-party warehouses
 - Stocky CSV import, including supplier lead times
-- Purchase order builder with CSV export
+- Suppliers and purchase orders: send, receive and export as CSV
+- Low-stock alerts with a Shopify Flow trigger
+- Ask Claude or other AI assistants about your stock (Pro)
 
 **Search terms**
 inventory forecast, reorder point, stocky alternative, demand planning, purchase orders
@@ -70,8 +72,8 @@ inventory forecast, reorder point, stocky alternative, demand planning, purchase
 | Plan | Price | Includes |
 | --- | --- | --- |
 | Free | Free | Up to 100 variants, tested forecasts, reorder suggestions, Stocky import |
-| Growth | $19/month, 14-day free trial | Up to 2,000 variants, weekly-pattern model, purchase order builder |
-| Pro | $49/month, 14-day free trial | Unlimited variants, everything in Growth |
+| Growth | $19/month, 14-day free trial | Up to 2,000 variants, weekly-pattern model, suppliers, purchase orders, low-stock alerts |
+| Pro | $49/month, 14-day free trial | Unlimited variants, everything in Growth, AI assistant access |
 
 ## 4. Images
 
@@ -100,8 +102,10 @@ Retake them after renaming the app if any screen shows the old name.
 >    chart and the explanation of each number.
 > 3. Settings: change the lead time or safety stock; the dashboard updates.
 > 4. Billing: upgrade to Growth or Pro (test charges on development stores),
->    then open Purchase orders to build and export a CSV. Downgrade from the
->    Billing page.
+>    then open Suppliers to add one, and Purchase orders to build one, save
+>    it, mark it sent and record received units (receiving does not change
+>    Shopify stock). Alerts lists low-stock alerts; on Pro, AI assistants
+>    creates a read-only key. Downgrade from the Billing page.
 > 5. Import: upload a Stocky CSV export on the Import page to bring in lead
 >    times.
 >
