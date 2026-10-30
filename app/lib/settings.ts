@@ -86,8 +86,13 @@ export interface EffectiveSettings {
   overridden: boolean;
 }
 
-export function resolveSettings(settings: ForecastSettings, override?: VariantOverride | null): EffectiveSettings {
-  const leadTime = override?.leadTime ?? settings.defaultLeadTime;
+export function resolveSettings(
+  settings: ForecastSettings,
+  override?: VariantOverride | null,
+  /** The supplier's lead time for this product's vendor, when there is one. */
+  supplierLeadTime?: number | null,
+): EffectiveSettings {
+  const leadTime = override?.leadTime ?? supplierLeadTime ?? settings.defaultLeadTime;
   const safetyStockPct = override?.safetyStockPct ?? settings.safetyStockPct;
   const targetDays = override?.targetDays ?? settings.targetDays;
   return {

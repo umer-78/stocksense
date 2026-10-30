@@ -34,6 +34,10 @@ export interface CatalogVariant {
   price: number | null;
   /** InventoryItem.unitCost when set. */
   unitCost: number | null;
+  /** Product vendor (matched to Forelark suppliers). */
+  vendor?: string;
+  /** InventoryItem GID, used to match inventory webhooks. */
+  inventoryItemId?: string | null;
   levels: InventoryLevelInfo[];
 }
 
@@ -58,6 +62,8 @@ export interface VariantInventory {
   locationId: string | null;
   locationName: string | null;
   productCreatedAt?: string | null;
+  /** Product vendor (matched to Forelark suppliers). */
+  vendor?: string;
 }
 
 /**

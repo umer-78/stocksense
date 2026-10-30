@@ -1,0 +1,36 @@
+[[extensions]]
+name = "Item needs reordering"
+type = "flow_trigger"
+handle = "item-needs-reordering"
+description = "Runs when Forelark finds a product will run out before a new order could arrive (status \"Reorder now\"). At most once a day per variant."
+
+[settings]
+
+  [[settings.fields]]
+  type = "product_reference"
+  description = "The product that needs reordering."
+
+  [[settings.fields]]
+  type = "single_line_text_field"
+  key = "Variant"
+  description = "Variant title, or empty for single-variant products."
+
+  [[settings.fields]]
+  type = "single_line_text_field"
+  key = "SKU"
+  description = "Variant SKU (may be empty)."
+
+  [[settings.fields]]
+  type = "number_decimal"
+  key = "Available"
+  description = "Units available to sell now."
+
+  [[settings.fields]]
+  type = "number_decimal"
+  key = "Days until stockout"
+  description = "Forecast days until the variant sells out."
+
+  [[settings.fields]]
+  type = "number_decimal"
+  key = "Suggested order quantity"
+  description = "Units Forelark suggests ordering."

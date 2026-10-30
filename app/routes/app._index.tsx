@@ -25,6 +25,7 @@ import { authenticateAdmin } from "../lib/auth";
 import { canUseFeature, enforcePlanLimit } from "../lib/billing/plans";
 import { getForecastContext, isAuthed, syncInfo } from "../lib/context.server";
 import { buildRows, filterRows, summarize, type DashboardSummary } from "../lib/dashboard";
+import { getPlanningInputs } from "../lib/planning.server";
 import { getVariantOverrides } from "../lib/settings.server";
 import type { SyncInfo } from "../lib/sync-info";
 import type { LocationInfo } from "../lib/shopify/types";
@@ -116,11 +117,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const validLocation = locationId && snapshot.locations.some((l) => l.id === locationId) ? locationId : null;
 
     const allowedCount = enforcePlanLimit(context.plan, snapshot.variants.length);
-    const overrides = await getVariantOverrides(context.shop);
+    const [overrides, planning] = await Promise.all([getVariantOverrides(context.shop), getPlanningInputs(context.shop)]);
     const { rows: allRows, variantCount } = buildRows(snapshot, context.settings, overrides, {
       allowSeasonal: canUseFeature(context.plan, "seasonality"),
       locationId: validLocation,
       limit: allowedCount.limit,
+      planning,
     });
 
     const filtered = filterRows(allRows, { status, search });

@@ -30,6 +30,8 @@ import { forecastStatus, forecastVariant } from "../lib/dashboard";
 import type { SalesRecord } from "../lib/forecast";
 import { toDailySeries } from "../lib/forecast";
 import { sanitizeOverride, type ForecastSettings, type VariantOverride } from "../lib/settings";
+import { withPlanning } from "../lib/planning";
+import { getPlanningInputs } from "../lib/planning.server";
 import { getVariantOverride, saveVariantOverride } from "../lib/settings.server";
 import { inventoryAt, salesFor } from "../lib/shopify/adapter";
 import type { InventoryLevelInfo, VariantInventory } from "../lib/shopify/types";
@@ -38,6 +40,8 @@ import type { SyncInfo } from "../lib/sync-info";
 const CHART_HISTORY_DAYS = 56;
 
 interface DetailLoaderData {
+  /** Lead time from the supplier covering this product's vendor. */
+  supplierLeadTime: number | null;
   missingCredentials: boolean;
   error?: string;
   sync: SyncInfo | null;
@@ -58,6 +62,7 @@ const EMPTY: Omit<DetailLoaderData, "missingCredentials"> = {
   override: null,
   allowSeasonal: false,
   asOf: null,
+  supplierLeadTime: null,
 };
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
@@ -81,8 +86,9 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     if (!catalogVariant) {
       throw new Response("Variant not found", { status: 404 });
     }
-    const variant =
+    const baseVariant =
       inventoryAt(catalogVariant, context.settings.locationId) ?? inventoryAt(catalogVariant, null)!;
+    const { variant, supplierLeadTime } = withPlanning(baseVariant, await getPlanningInputs(context.shop));
     return json<DetailLoaderData>({
       ...base,
       variant,
@@ -91,6 +97,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
       override: await getVariantOverride(context.shop, variantId),
       allowSeasonal: canUseFeature(context.plan, "seasonality"),
       asOf: snapshot.windowEnd,
+      supplierLeadTime,
     });
   } catch (error) {
     if (error instanceof Response) {
@@ -197,8 +204,9 @@ export default function VariantDetail() {
       allowSeasonal: data.allowSeasonal,
       asOf: data.asOf ?? undefined,
       override: draftOverride,
+      supplierLeadTime: data.supplierLeadTime,
     });
-  }, [data.variant, data.salesHistory, data.allowSeasonal, data.asOf, settings, draftOverride]);
+  }, [data.variant, data.salesHistory, data.allowSeasonal, data.asOf, settings, draftOverride, data.supplierLeadTime]);
 
   const chart = useMemo(() => {
     if (!data.asOf) {
