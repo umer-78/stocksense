@@ -36,7 +36,10 @@ export default function App() {
           Dashboard
         </Link>
         <Link to="/app/purchase-orders">Purchase orders</Link>
+        <Link to="/app/suppliers">Suppliers</Link>
+        <Link to="/app/alerts">Alerts</Link>
         <Link to="/app/settings">Settings</Link>
+        <Link to="/app/ai-assistants">AI assistants</Link>
         <Link to="/app/import">Import Stocky</Link>
         <Link to="/app/billing">Billing</Link>
       </NavMenu>

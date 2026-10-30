@@ -244,7 +244,9 @@ export function generateForecast(input: ForecastInput): ForecastResult {
     }
   }
 
-  if (Number.isFinite(stockoutDays)) {
+  if (onHand <= 0) {
+    explanation.push(`With 0 units on hand, this item is already out of stock.`);
+  } else if (Number.isFinite(stockoutDays)) {
     explanation.push(
       `With ${formatInteger(onHand)} units on hand, stock is projected to run out in about ${formatNumber(stockoutDays)} days.`,
     );

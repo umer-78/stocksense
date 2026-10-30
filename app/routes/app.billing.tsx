@@ -97,12 +97,15 @@ const PLAN_FEATURES: Record<PlanId, string[]> = {
   growth: [
     "Up to 2,000 variants",
     "Everything in Free, plus the weekly-pattern (weekday/weekend) model",
-    "Purchase order builder with CSV export",
+    "Suppliers with their own lead times",
+    "Purchase orders: send to suppliers, receive stock, CSV export",
+    "Low-stock alerts and a Shopify Flow trigger",
     "14-day free trial",
   ],
   pro: [
     "Unlimited variants",
     "Everything in Growth",
+    "Ask Claude or other AI assistants about your stock (MCP)",
     "14-day free trial",
   ],
 };

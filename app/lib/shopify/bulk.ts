@@ -24,7 +24,7 @@ export const VARIANTS_BULK_QUERY = `{
         title
         sku
         price
-        product { id title status createdAt isGiftCard }
+        product { id title status createdAt isGiftCard vendor }
         inventoryItem {
           id
           tracked
@@ -194,7 +194,7 @@ interface RawBulkVariant {
   title?: string;
   sku?: string | null;
   price?: string | null;
-  product?: { id?: string; title?: string; status?: string; createdAt?: string; isGiftCard?: boolean } | null;
+  product?: { id?: string; title?: string; status?: string; createdAt?: string; isGiftCard?: boolean; vendor?: string | null } | null;
   inventoryItem?: { id?: string; tracked?: boolean; unitCost?: { amount?: string } | null } | null;
 }
 
@@ -273,6 +273,8 @@ export async function parseVariantsJsonl(lines: Lines): Promise<CatalogVariant[]
       sku: raw.sku ?? "",
       price: toNumber(raw.price),
       unitCost: toNumber(raw.inventoryItem?.unitCost?.amount),
+      vendor: raw.product?.vendor ?? "",
+      inventoryItemId: raw.inventoryItem?.id ?? null,
       levels: [],
     });
     if (raw.inventoryItem?.id) {
