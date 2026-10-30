@@ -28,17 +28,29 @@ English.
   per-product lead time / safety stock / cover overrides that recompute live.
 - **Safety stock two ways.** A percentage of lead-time demand, or sized from
   measured forecast error for a chosen service level.
-- **Purchase order builder.** Variants that need reordering, adjustable
-  quantities, CSV export (download or copy). Stock already on order is
-  subtracted. CSV only — no automatic PO emailing.
+- **Suppliers.** One record per supplier (email, lead time, notes), linked to
+  Shopify product vendors. A supplier's lead time applies to all its products
+  unless a product has its own (`app/lib/suppliers.ts`, `settings.ts`).
+- **Purchase orders.** Build from the reorder list (optionally one supplier's
+  products), save as PO-0001, PO-0002…, send to the supplier (pre-filled email
+  or copy), receive in full or per line, cancel or delete drafts, CSV export.
+  Open orders count as incoming stock in every forecast
+  (`app/lib/purchase-orders.ts`, `planning.ts`).
+- **Low-stock alerts.** The `inventory_levels/update` webhook re-checks the
+  variant; when it turns "Reorder now" Forelark logs an alert (at most once a
+  day per variant) and fires the Shopify Flow trigger "Item needs reordering"
+  (`extensions/reorder-alert/`), so merchants can email, Slack or tag from Flow.
+- **AI assistants (MCP).** Pro shops can create an API key and connect Claude
+  or any MCP client to `/mcp` (read-only tools: stock summary, reorder list,
+  variant forecast, purchase orders — `app/lib/mcp.ts`).
 - **Stocky CSV import.** Parser for `Stocky - Variants.csv` and
   `Stocky - Purchase Orders.csv`; lead times from the variants export can be
   applied to matching SKUs.
 - **Shopify data via bulk operations.** Catalog and orders are read with bulk
   exports (no query-cost limits), cached as a gzipped snapshot in Postgres and
   refreshed every 6 hours or on demand (`app/lib/shopify/snapshot.server.ts`).
-- **Plans and billing.** Free (100 variants) / Growth $19/mo (2,000) / Pro
-  $49/mo (unlimited), billed through Shopify with 14-day trials. Limits are
+- **Plans and billing.** Free (100 variants) / Growth $19/mo (2,000, suppliers,
+  purchase orders, alerts) / Pro $49/mo (unlimited, AI assistants), billed through Shopify with 14-day trials. Limits are
   enforced server-side (`app/lib/billing/plans.ts`).
 - **Privacy.** All three mandated GDPR webhooks implemented; uninstall deletes
   the shop's data. No customer data or order details are stored.
@@ -50,8 +62,8 @@ English.
 - **Shopify App Remix** (`@shopify/shopify-app-remix`) — OAuth, Admin API
   GraphQL, billing, webhooks; API version `2026-07`
 - **Polaris** (`@shopify/polaris` v12) — UI components
-- **Prisma + Postgres** (Supabase free tier) — sessions, per-shop settings, Stocky imports, privacy
-  event log (`prisma/schema.prisma`)
+- **Prisma + Postgres** (Supabase free tier) — sessions, per-shop settings, Stocky imports,
+  suppliers, purchase orders, alerts, API key hashes, privacy event log (`prisma/schema.prisma`)
 - **Forecast engine** (`app/lib/forecast/`) — pure TypeScript, no framework
   dependencies: velocity, models, back-test selection, stockout, reorder,
   and the `generateForecast` orchestrator that produces the explanations

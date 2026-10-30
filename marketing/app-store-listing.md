@@ -34,29 +34,33 @@ Stocky, Shopify's native inventory app, shut down on August 31, 2026. Forelark h
 
 **Adjust assumptions, recompute live.** Edit supplier lead time, safety stock %, or target coverage days and the recommendation updates instantly. Save your defaults once and they drive the whole dashboard.
 
-**Turn suggestions into a purchase order.** The PO builder lists every variant that needs reordering, lets you adjust quantities, and exports a CSV for your supplier. (CSV export only — nothing is emailed or auto-ordered.)
+**Suppliers and purchase orders.** Keep each supplier's email and lead time. Turn the reorder list into a purchase order (for everything or one supplier), send it from your own email or as a CSV, and record what arrived. Open orders count as incoming stock. Nothing is auto-ordered.
 
-**Bring your Stocky history.** Import Stocky CSV exports (variants and PO history) as a reference with a preview before you confirm. Suppliers are not carried over.
+**Alerts before you run out.** When a variant turns "Reorder now" Forelark logs an alert and fires a Shopify Flow trigger, so you can get an email, a Slack message or a tag.
+
+**Ask your AI assistant.** On Pro, connect Claude or any MCP-compatible assistant with a read-only key and ask what to reorder this week.
+
+**Bring your Stocky history.** Import Stocky CSV exports (variants and PO history) as a reference with a preview before you confirm. Suppliers are added in Forelark, one click per product vendor.
 
 **All locations or one, reads only.** Forecast all locations combined or a single location — the app only reads your inventory, never writes.
 
 **Plans for every size of store:**
 - **Free** — up to 100 SKUs: forecasts, urgency dashboard, Stocky import.
-- **Growth ($19/mo)** — up to 2,000 SKUs, adds the weekly-pattern forecast model and the purchase order builder. 14-day free trial.
-- **Pro ($49/mo)** — unlimited SKUs, everything in Growth. 14-day free trial.
+- **Growth ($19/mo)** — up to 2,000 SKUs, adds the weekly-pattern forecast model, suppliers, purchase orders and low-stock alerts. 14-day free trial.
+- **Pro ($49/mo)** — unlimited SKUs, everything in Growth, plus AI-assistant access. 14-day free trial.
 
-**What Forelark does not do (yet):** it does not place or email orders (CSV export only); it does not manage suppliers or receiving; it counts stock on order but does not know when it will arrive; and it only reads your inventory, never writes.
+**What Forelark does not do (yet):** it does not place orders by itself (you send each purchase order); receiving is recorded on the purchase order but does not change Shopify stock; it counts stock on order but does not know when it will arrive; and it only reads your inventory, never writes.
 
 **Privacy by design.** Stores no customer data and implements Shopify's GDPR webhooks for data requests, customer redaction, and shop redaction.
 
 ---
 ## 4. Pricing table (matches `app/lib/billing/plans.ts` exactly)
 
-| Plan | Price | SKU limit | Weekly-pattern model | PO builder | Stocky import | Trial |
-| --- | --- | --- | --- | --- | --- | --- |
-| Free | $0 | 100 | No | No | Yes | — |
-| Growth | $19/mo | 2,000 | Yes | Yes | Yes | 14 days |
-| Pro | $49/mo | Unlimited | Yes | Yes | Yes | 14 days |
+| Plan | Price | SKU limit | Weekly-pattern model | Suppliers + POs | Alerts | AI assistants | Stocky import | Trial |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Free | $0 | 100 | No | No | No | No | Yes | — |
+| Growth | $19/mo | 2,000 | Yes | Yes | Yes | No | Yes | 14 days |
+| Pro | $49/mo | Unlimited | Yes | Yes | Yes | Yes | Yes | 14 days |
 
 Billing is handled by Shopify's Billing API (recurring, every 30 days, USD). The Free plan is not a billing entry — no subscription means Free. A subscription whose status is anything other than ACTIVE (cancelled, expired, declined, frozen, pending) maps back to Free.
 
@@ -107,7 +111,7 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 **Billing flow.**
 - Paid plans (Growth $19/mo, Pro $49/mo) use Shopify's Billing API with a 14-day trial on both.
 - Test vs. real charges is env-driven (`isTestBilling()` in `app/lib/billing/plans.ts`): real charges in production, simulated charges on development stores, so reviewers testing on dev stores see simulated charges.
-- Plan gating is enforced server-side on every route (`app/lib/billing/plans.ts`): SKU caps, the weekly-pattern model, PO builder, and Stocky import are all feature-flagged per plan.
+- Plan gating is enforced server-side on every route (`app/lib/billing/plans.ts`): SKU caps, the weekly-pattern model, suppliers and purchase orders, alerts, AI-assistant access and Stocky import are all feature-flagged per plan.
 
 **Access scopes and why.**
 | Scope | Why |
@@ -118,8 +122,9 @@ All three mandated compliance webhooks are implemented and registered in `shopif
 | `read_locations` | List locations so merchants can pick which one to forecast against |
 
 **Honesty notes for reviewers.**
-- The app does not write inventory, does not place orders, and does not email suppliers. PO output is CSV export only.
-- Stocky import is best-effort reference data (parsed and stored, previewed before confirm); it does not migrate suppliers or wire into the PO builder.
+- The app does not write inventory and does not place orders. "Send to supplier" opens the merchant's own email (or copies the text / downloads a CSV); the app sends no email itself. Receiving updates the purchase order only.
+- AI-assistant access is read-only: the `/mcp` endpoint exposes four read tools, authenticated with a per-shop key stored as a SHA-256 hash.
+- Stocky import is best-effort reference data (parsed and stored, previewed before confirm); it does not create supplier records or purchase orders automatically.
 - Forecasting claims are limited to what the code does: classical statistical models fitted and back-tested per variant in the app (`app/lib/forecast/models.ts`, `backtest.ts`); no external AI service and no promises of exact accuracy.
 
 ---

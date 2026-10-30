@@ -59,13 +59,13 @@
     {
       "@type": "FAQPage",
       "mainEntity": [
-        { "@type": "Question", "name": "Is Forelark a drop-in Stocky replacement?", "acceptedAnswer": { "@type": "Answer", "text": "It covers the part most stores relied on: knowing what to reorder and when. You can import Stocky's variant and purchase-order CSV exports as reference history. It does not carry over suppliers and does not place orders, so it is a focused replacement rather than a full match." } },
+        { "@type": "Question", "name": "Is Forelark a drop-in Stocky replacement?", "acceptedAnswer": { "@type": "Answer", "text": "It covers the part most stores relied on: knowing what to reorder and when. It also keeps your suppliers and their lead times, and tracks purchase orders from draft to received. You can import Stocky's variant and purchase-order CSV exports as reference history. It never places orders or changes your stock levels by itself." } },
         { "@type": "Question", "name": "How does Forelark calculate the reorder point?", "acceptedAnswer": { "@type": "Answer", "text": "Lead-time demand is the forecast demand over your supplier lead time. The forecast comes from whichever method predicted this product's recent sales best: a simple average, exponential smoothing, a trend model, a weekly-pattern model or a model for slow sellers. Safety stock is a percentage of lead-time demand (20% by default), or sized from measured forecast error for a chosen service level. The reorder point is lead-time demand plus safety stock, rounded up. The suggested order brings stock back to your target days of cover plus safety stock, minus sellable stock and units already on order." } },
         { "@type": "Question", "name": "How much sales history does Forelark need?", "acceptedAnswer": { "@type": "Answer", "text": "It reads up to 60 days of orders by default, which is what Shopify shares with apps unless the store grants access to all orders. With at least 4 weeks of sales it tests its forecasting methods against your own history; with less it uses the simple average and marks the forecast as low confidence." } },
-        { "@type": "Question", "name": "Will Forelark change my inventory or place orders?", "acceptedAnswer": { "@type": "Answer", "text": "No. It only reads inventory and order history. The purchase-order builder exports a CSV for you to send to your supplier. Nothing is written back to Shopify and nothing is ordered automatically." } },
+        { "@type": "Question", "name": "Will Forelark change my inventory or place orders?", "acceptedAnswer": { "@type": "Answer", "text": "No. It only reads inventory and order history. A purchase order goes to your supplier only when you press send, from your own email. Marking a purchase order received is recorded in Forelark; your Shopify stock is not changed. Nothing is ordered automatically." } },
         { "@type": "Question", "name": "Does Forelark work with multiple locations?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Forecast all locations combined, or pick a single location on the dashboard or in settings. Sales are counted store-wide." } },
         { "@type": "Question", "name": "How much does Forelark cost?", "acceptedAnswer": { "@type": "Answer", "text": "Free for up to 100 variants. Growth is $19 per month for up to 2,000 variants and Pro is $49 per month for unlimited variants. Paid plans include a 14-day free trial and are billed through Shopify, so you can cancel from your Shopify admin at any time." } },
-        { "@type": "Question", "name": "What happens to my data if I uninstall Forelark?", "acceptedAnswer": { "@type": "Answer", "text": "Your store's settings and any imported CSV files are deleted. Forelark does not copy your Shopify orders or products into its database and stores no customer data." } }
+        { "@type": "Question", "name": "What happens to my data if I uninstall Forelark?", "acceptedAnswer": { "@type": "Answer", "text": "Your store's settings, suppliers, purchase orders, alerts and any imported CSV files are deleted. Forelark does not copy your Shopify orders or products into its database and stores no customer data." } }
       ]
     }
   ]
@@ -301,7 +301,7 @@
     <div class="steps">
       <div class="step"><div class="n">1</div><div><h3>It reads your real sales</h3><p>Forelark pulls each variant's order history from Shopify and works out its sales velocity: units sold divided by the calendar days in your lookback window (60 days by default), so days with no sales count as zero rather than being skipped.</p></div></div>
       <div class="step"><div class="n">2</div><div><h3>It tests forecasting methods on your own sales</h3><p>For every product, Forelark tries several forecasting methods (a simple average, exponential smoothing, a trend model, a weekly-pattern model and a model for slow sellers) on your last few weeks of sales, and keeps the one that predicted best. From sellable stock and units already on order it then works out days to stockout, the reorder point and the order quantity, showing the arithmetic and how accurate the chosen method was. The weekly-pattern model is on Growth and Pro.</p></div></div>
-      <div class="step"><div class="n">3</div><div><h3>You adjust and export a purchase order</h3><p>Change the lead time, safety stock or target days and every recommendation recomputes at once. The purchase-order builder lists what needs reordering and exports a CSV for your supplier. It never emails or places an order for you.</p></div></div>
+      <div class="step"><div class="n">3</div><div><h3>You send a purchase order and track it</h3><p>Change the lead time, safety stock or target days and every recommendation recomputes at once. Turn the reorder list into a purchase order, for all products or one supplier, send it to the supplier from your own email or as a CSV, and mark items received when they arrive. Open orders count as incoming stock. Nothing is ordered for you.</p></div></div>
     </div>
   </div>
 </section>
@@ -320,15 +320,17 @@
           <li>All locations combined, or one location</li>
           <li>An urgency dashboard ranked critical, low, or healthy</li>
           <li>Live recompute when you change lead time or safety stock</li>
-          <li>A purchase-order builder with CSV export</li>
+          <li>Suppliers with their own lead times</li>
+          <li>Purchase orders you save, send to the supplier, receive and export as CSV</li>
+          <li>Low-stock alerts, with a Shopify Flow trigger for email, Slack or tags</li>
+          <li>Answers in Claude and other AI assistants about your stock (Pro)</li>
           <li>Import of Stocky's variant and purchase-order CSV exports</li>
         </ul>
       </div>
       <div class="panel">
         <h3>What it does not do</h3>
         <ul class="list no">
-          <li>Place or email orders. CSV export only.</li>
-          <li>Manage suppliers or receiving</li>
+          <li>Place orders by itself. You decide when each purchase order is sent.</li>
           <li>Know when stock on order will arrive. Incoming units are counted, not dated.</li>
           <li>Write to your inventory. It reads only.</li>
           <li>Store any customer data. Shopify's GDPR webhooks are implemented.</li>
@@ -358,7 +360,9 @@
         <tr><th scope="row">Variants tracked</th><td>up to 100</td><td>up to 2,000</td><td>unlimited</td></tr>
         <tr><th scope="row">Velocity and days to stockout</th><td>yes</td><td>yes</td><td>yes</td></tr>
         <tr><th scope="row">Weekly-pattern forecast model</th><td>no</td><td>yes</td><td>yes</td></tr>
-        <tr><th scope="row">Purchase-order builder and CSV</th><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><th scope="row">Suppliers and purchase orders</th><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><th scope="row">Low-stock alerts and Flow trigger</th><td>no</td><td>yes</td><td>yes</td></tr>
+        <tr><th scope="row">AI assistant access (MCP)</th><td>no</td><td>no</td><td>yes</td></tr>
         <tr><th scope="row">Stocky CSV import</th><td>yes</td><td>yes</td><td>yes</td></tr>
         <tr><th scope="row">Free trial</th><td>&mdash;</td><td>14 days</td><td>14 days</td></tr>
       </tbody>
@@ -392,16 +396,16 @@
     <p class="kicker">Questions</p>
     <h2>Before you install</h2>
     <div class="faq">
-      <details><summary>Is this a drop-in Stocky replacement?</summary><p>It covers the part most stores relied on: knowing what to reorder and when. You can import Stocky's variant and purchase-order CSV exports as reference history. It does not carry over suppliers, and it does not place orders, so it is a focused replacement rather than a full match. The <a href="stocky-replacement.html">Stocky replacement guide</a> walks through the switch.</p></details>
+      <details><summary>Is this a drop-in Stocky replacement?</summary><p>It covers the part most stores relied on: knowing what to reorder and when. It also keeps your suppliers and their lead times, and tracks purchase orders from draft to received. You can import Stocky's variant and purchase-order CSV exports as reference history. It never places orders or changes your stock levels by itself. The <a href="stocky-replacement.html">Stocky replacement guide</a> walks through the switch.</p></details>
       <details><summary>How does it calculate the reorder point?</summary><p>Lead-time demand is the forecast demand over your supplier lead time. Safety stock is a percentage of that (20% by default), or sized from how far the forecast has missed for a service level you choose. The reorder point is lead-time demand plus safety stock, rounded up. The suggested order brings stock back to your target days of cover plus safety stock, minus sellable stock and anything already on order. For steady sellers the forecast is the simple average, which is what the <a href="reorder-point-calculator.html">reorder point calculator</a> uses.</p></details>
       <details><summary>Which forecasting method does it use?</summary><p>It picks one per product. Forelark fits a simple average, a recent 4-week average, exponential smoothing, a damped trend model, a weekly-pattern (Holt-Winters) model and a slow-seller (Croston) model, then tests each one by forecasting weeks it has already seen. The method with the smallest error is used, and the product page shows how far off it was. On a simulated catalog this halved forecast error compared with a plain average. Everything runs in the app; no data is sent to an outside AI service.</p></details>
       <details><summary>How much sales history does it need?</summary><p>It reads up to 60 days of orders by default, which is what Shopify shares with apps unless the store grants access to all orders. With at least 4 weeks of sales it tests forecasting methods against your history; with less it uses the simple average and marks the forecast as low confidence. New products are measured from the day they were created, not penalized for days before they existed.</p></details>
       <details><summary>How does it handle a product with very little sales history?</summary><p>It still shows a figure, but marks the forecast as low confidence rather than presenting a thin-data guess as if it were certain. The math on the card shows exactly what the estimate is based on.</p></details>
-      <details><summary>Will it change my inventory or place orders?</summary><p>No. Forelark only reads your inventory and order history. The purchase-order builder exports a CSV for you to send to your supplier. Nothing is written back to Shopify and nothing is ordered automatically.</p></details>
+      <details><summary>Will it change my inventory or place orders?</summary><p>No. Forelark only reads your inventory and order history. A purchase order goes to your supplier only when you press send, from your own email. Marking it received is recorded in Forelark; your Shopify stock is not changed. Nothing is ordered automatically.</p></details>
       <details><summary>Does it work with multiple locations?</summary><p>Yes. Forecast all locations combined, or pick one location on the dashboard or in settings. Sales are counted store-wide; stock comes from the location you choose.</p></details>
       <details><summary>What do I need to set up after installing?</summary><p>Nothing, to start. The defaults are a 14-day supplier lead time, 20% safety stock, 30 days of target cover and a 60-day sales lookback, so the dashboard works straight away. Change any of them in settings, or give a product its own lead time, and every recommendation recomputes. The first sync with Shopify takes under a minute for most stores.</p></details>
       <details><summary>How does billing work, and can I cancel?</summary><p>The Free plan covers up to 100 variants with no charge. Growth ($19/month, up to 2,000 variants) and Pro ($49/month, unlimited) include a 14-day free trial. All charges go through your Shopify bill, and you cancel from your Shopify admin like any other app.</p></details>
-      <details><summary>What happens to my data if I uninstall?</summary><p>Your store's settings and any imported CSV files are deleted. Forelark does not copy your Shopify orders or products into its database; it fetches them from Shopify when needed. See the <a href="privacy-policy.html">privacy policy</a>.</p></details>
+      <details><summary>What happens to my data if I uninstall?</summary><p>Your store's settings, suppliers, purchase orders, alerts and any imported CSV files are deleted. Forelark does not copy your Shopify orders or products into its database; it fetches them from Shopify when needed. See the <a href="privacy-policy.html">privacy policy</a>.</p></details>
       <details><summary>What about customer data and GDPR?</summary><p>The app stores no customer data. It implements Shopify's three mandated privacy webhooks for data requests, customer redaction and shop redaction.</p></details>
       <details><summary>When can I install it?</summary><p>Forelark is in early access while it goes through Shopify App Store review. <a href="mailto:umerhashmi987@gmail.com?subject=Forelark%20early%20access">Email for early access</a> and you will hear as soon as it can be installed on your store.</p></details>
       <details><summary>Can I self-host it?</summary><p>Yes. Forelark is open source. The repository includes a Dockerfile, deploy configuration for common hosts, and a deploy guide. See <a href="https://github.com/umer-78/stocksense">the source on GitHub</a>.</p></details>
