@@ -51,7 +51,9 @@ English.
   (`extensions/reorder-alert/`), so merchants can email, Slack or tag from Flow.
 - **AI assistants (MCP).** Pro shops can create an API key and connect Claude
   or any MCP client to `/mcp` (read-only tools: stock summary, reorder list,
-  variant forecast, purchase orders — `app/lib/mcp.ts`).
+  variant forecast, purchase orders — `app/lib/mcp.ts`). Keys are stored only
+  as scrypt hashes; the endpoint caps request size and batch length and
+  rate-limits per address and per shop (`app/lib/rate-limit.ts`).
 - **Stocky CSV import.** Parser for `Stocky - Variants.csv` and
   `Stocky - Purchase Orders.csv`; lead times from the variants export can be
   applied to matching SKUs.
