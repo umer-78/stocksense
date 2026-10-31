@@ -11,8 +11,16 @@ import { canUseFeature } from "../lib/billing/plans";
 import { handleMcpMessage } from "../lib/mcp";
 import { mcpDataForShop } from "../lib/mcp.server";
 import { cachedPlan } from "../lib/plan-cache.server";
+import { clientAddress, createRateLimiter } from "../lib/rate-limit";
 
 const MAX_BODY_BYTES = 256 * 1024;
+const MAX_BATCH = 20;
+// Per address before the key is checked (each check is an scrypt hash), and
+// per shop after; generous for an assistant, tight for a script guessing keys.
+const byAddress = createRateLimiter({ limit: 120, windowMs: 60_000 });
+const byShop = createRateLimiter({ limit: 240, windowMs: 60_000 });
+const tooMany = (waitMs: number) =>
+  rpcError(-32029, "Too many requests. Try again shortly.", 429, { "Retry-After": String(Math.ceil(waitMs / 1000)) });
 
 const rpcError = (code: number, message: string, status: number, headers: Record<string, string> = {}) =>
   json({ jsonrpc: "2.0", id: null, error: { code, message } }, { status, headers });
@@ -24,6 +32,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   if (request.method !== "POST") {
     return new Response(null, { status: 405, headers: { Allow: "POST" } });
   }
+  const addressWait = byAddress.hit(clientAddress(request));
+  if (addressWait) return tooMany(addressWait);
   const token = bearerToken(request.headers.get("authorization"));
   const shop = token ? await shopForApiKey(token) : null;
   if (!shop) {
@@ -31,6 +41,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       "WWW-Authenticate": 'Bearer realm="forelark"',
     });
   }
+  const shopWait = byShop.hit(shop);
+  if (shopWait) return tooMany(shopWait);
   if (!canUseFeature(await cachedPlan(shop), "aiAccess")) {
     return rpcError(-32001, "AI assistant access needs the Forelark Pro plan.", 403);
   }
@@ -52,7 +64,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const data = mcpDataForShop(shop);
   if (Array.isArray(body)) {
-    const responses = (await Promise.all(body.slice(0, 20).map((message) => handleMcpMessage(message, data)))).filter(Boolean);
+    // a batch over the limit is refused whole, rather than silently cut short
+    if (body.length > MAX_BATCH) {
+      return rpcError(-32600, `Batch too large (at most ${MAX_BATCH} messages)`, 413);
+    }
+    const responses = (await Promise.all(body.map((message) => handleMcpMessage(message, data)))).filter(Boolean);
     return responses.length ? json(responses) : new Response(null, { status: 202 });
   }
   const response = await handleMcpMessage(body, data);
