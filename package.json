@@ -25,7 +25,7 @@
     "node": ">=22.12"
   },
   "dependencies": {
-    "@prisma/client": "^6.2.1",
+    "@prisma/client": "^6.19.3",
     "@remix-run/dev": "^2.16.1",
     "@remix-run/fs-routes": "^2.16.1",
     "@remix-run/node": "^2.16.1",
@@ -33,10 +33,10 @@
     "@remix-run/serve": "^2.16.1",
     "@shopify/app-bridge-react": "^4.2.14",
     "@shopify/polaris": "^13.9.5",
-    "@shopify/shopify-app-remix": "^5.0.1",
-    "@shopify/shopify-app-session-storage-prisma": "^10.0.1",
+    "@shopify/shopify-app-remix": "^6.0.5",
+    "@shopify/shopify-app-session-storage-prisma": "^11.0.3",
     "isbot": "^5.1.0",
-    "prisma": "^6.2.1",
+    "prisma": "^6.19.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "vite-tsconfig-paths": "^6.1.1"
