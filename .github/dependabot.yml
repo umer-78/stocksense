@@ -42,6 +42,13 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: '@prisma/client'
         update-types: ['version-update:semver-major']
+      # @remix-run/eslint-config 2 accepts only ESLint 8 (peer dependency).
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
+      # The types follow the Node the app runs on (22: Dockerfile, render.yaml),
+      # not the newest Node, so they cannot offer APIs production lacks.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
 
     groups:
 
@@ -60,6 +67,12 @@ updates:
         patterns:
           - 'vite'
           - 'vite-tsconfig-paths'
+      # The app library and its session storage share @shopify/shopify-api and
+      # must move to a new major together; one without the other cannot build.
+      shopify-app:
+        patterns:
+          - '@shopify/shopify-app-remix'
+          - '@shopify/shopify-app-session-storage-prisma'
       remix:
         patterns:
           - '@remix-run/dev'
