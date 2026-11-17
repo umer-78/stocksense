@@ -11,6 +11,9 @@ on:
     - cron: "*/5 * * * *"
   workflow_dispatch:
 
+# it only calls the health endpoint
+permissions: {}
+
 jobs:
   ping:
     runs-on: ubuntu-latest
