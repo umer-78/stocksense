@@ -42,6 +42,10 @@ updates:
         update-types: ['version-update:semver-major']
       - dependency-name: '@prisma/client'
         update-types: ['version-update:semver-major']
+      # Remix 2 packages accept TypeScript 5 only (peer dependency); 7 is the new
+      # native compiler.
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
       # @remix-run/eslint-config 2 accepts only ESLint 8 (peer dependency).
       - dependency-name: 'eslint'
         update-types: ['version-update:semver-major']
